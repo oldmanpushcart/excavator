@@ -3,17 +3,19 @@ excavator
 
 excavator（挖掘机）是一个分布式的Java RMI框架。（求项目使用，有兴趣的可以电邮oldmanpushcart@gmail.com）
 
-* 适用场景
-* 框架设计
-* 快速开始
+* [适用场景](http://code.google.com/p/excavator/wiki/ApplicationOfScene)
+* [框架设计](http://code.google.com/p/excavator/wiki/FrameworkDesign)
+* [快速开始](http://code.google.com/p/excavator/wiki/QuickStart)
 * 进阶教程
- * 运行时环境
- * 通知机制
- * 性能监控
- * 性能诊断
+ * [运行时环境](http://code.google.com/p/excavator/wiki/Runtimes)
+ * [通知机制](http://code.google.com/p/excavator/wiki/Advice)
+ * [性能监控](http://code.google.com/p/excavator/wiki/MonitorAdvice)
+ * [性能诊断](http://code.google.com/p/excavator/wiki/Profiler)
  * 路由规则（1.2版推出）
  * 权重调整（1.2版推出）
  * 服务质量（1.2版推出）
+* [性能报告](http://code.google.com/p/excavator/wiki/Performance)
+* [更新日志](http://code.google.com/p/excavator/wiki/ChangeLog)(当前最新版本1.1.4)
 
 框架简介
 =========
