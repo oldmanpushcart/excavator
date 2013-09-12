@@ -6,6 +6,8 @@ import static com.netflix.curator.framework.CuratorFrameworkFactory.newClient;
 import static java.lang.String.format;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -35,6 +37,7 @@ public class ServiceDiscoverySupport implements Supporter, MessageSubscriber {
 	
 	private CuratorFramework client;
 	private Map<String,ConsumerService> services;
+	private List<PathChildrenCache> pathChildrenCaches = new ArrayList<PathChildrenCache>();
 	
 	private PathChildrenCacheListener listener = new PathChildrenCacheListener() {
 
@@ -94,6 +97,9 @@ public class ServiceDiscoverySupport implements Supporter, MessageSubscriber {
 
 	@Override
 	public void destroy() throws Exception {
+		for( PathChildrenCache pathChildrenCache : pathChildrenCaches ) {
+			pathChildrenCache.close();
+		}
 		if( null != client ) {
 			client.close();
 		}
@@ -114,6 +120,7 @@ public class ServiceDiscoverySupport implements Supporter, MessageSubscriber {
 				service.getSign());
 		
 		final PathChildrenCache pathCache = new PathChildrenCache(client, pref, false);
+		pathChildrenCaches.add(pathCache);
 		try {
 			pathCache.getListenable().addListener(listener);
 			pathCache.start();
