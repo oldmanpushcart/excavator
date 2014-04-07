@@ -11,46 +11,47 @@ import com.googlecode.excavator.protocol.RmiRequest;
 
 /**
  * 监控通知抽象类
+ *
  * @author vlinux
  *
  */
 public abstract class MonitorAdvice implements Advice {
 
-	@Override
-	public void doBefore(Runtime runtime) throws Throwable {
+    @Override
+    public void doBefore(Runtime runtime) throws Throwable {
 		// TODO Auto-generated method stub
-		
-	}
 
-	@Override
-	public void doAfter(Runtime runtime, Object returnObj, long cost) {
-		// 记录monitor
-		if( isEnableMonitor() ) {
-			final RmiRequest req = runtime.getReq();
-			
-			// 记录日志
-			monitor(getType(), 
-				req.getGroup(), 
-				req.getVersion(), 
-				req.getSign(), 
-				req.getAppName(), 
-				getAppName(), 
-				cost);
-		}
-	}
-	
-	public abstract Monitor.Type getType();
+    }
 
-	@Override
-	public void doThrow(Runtime runtime, Throwable throwable) {
+    @Override
+    public void doAfter(Runtime runtime, Object returnObj, long cost) {
+        // 记录monitor
+        if (isEnableMonitor()) {
+            final RmiRequest req = runtime.getReq();
+
+            // 记录日志
+            monitor(getType(),
+                    req.getGroup(),
+                    req.getVersion(),
+                    req.getSign(),
+                    req.getAppName(),
+                    getAppName(),
+                    cost);
+        }
+    }
+
+    public abstract Monitor.Type getType();
+
+    @Override
+    public void doThrow(Runtime runtime, Throwable throwable) {
 		// TODO Auto-generated method stub
-		
-	}
 
-	@Override
-	public void doFinally(Runtime runtime) {
+    }
+
+    @Override
+    public void doFinally(Runtime runtime) {
 		// TODO Auto-generated method stub
-		
-	}
+
+    }
 
 }

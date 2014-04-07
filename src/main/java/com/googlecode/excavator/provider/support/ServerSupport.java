@@ -29,109 +29,108 @@ import com.googlecode.excavator.provider.BusinessWorker;
 
 /**
  * 服务server支撑
+ *
  * @author vlinux
  *
  */
 public class ServerSupport implements Supporter {
 
-	private final Logger logger = Logger.getLogger(Log4jConstant.NETWORK);
-	
-	private InetSocketAddress address;		//提供服务的地址
-	private BusinessWorker businessWorker;	//工作者
-	
-	private ServerBootstrap bootstrap;
-	private ChannelGroup channelGroup;
-	private ChannelPipelineFactory channelPipelineFactory = new ChannelPipelineFactory() {
+    private final Logger logger = Logger.getLogger(Log4jConstant.NETWORK);
 
-		@Override
-		public ChannelPipeline getPipeline() throws Exception {
-			ChannelPipeline pipeline = Channels.pipeline();
-			pipeline.addLast("protocol-decoder", new ProtocolDecoder());
-			pipeline.addLast("rmi-decoder", new RmiDecoder());
-			pipeline.addLast("business-handler", businessHandler);
-			pipeline.addLast("protocol-encoder", new ProtocolEncoder());
-			pipeline.addLast("rmi-encoder", new RmiEncoder());
-			return pipeline;
-		}
+    private InetSocketAddress address;		//提供服务的地址
+    private BusinessWorker businessWorker;	//工作者
 
-	};
-	
-	/*
-	 * 业务处理器
-	 */
-	private SimpleChannelUpstreamHandler businessHandler = new SimpleChannelUpstreamHandler() {
-		
-		@Override
-		public void channelConnected(ChannelHandlerContext ctx,
-				ChannelStateEvent e) throws Exception {
-			super.channelConnected(ctx, e);
-			channelGroup.add(ctx.getChannel());
-			if( logger.isInfoEnabled() ) {
-				logger.info(format("client:%s was connected.", ctx.getChannel().getRemoteAddress()));
-			}
-		}
+    private ServerBootstrap bootstrap;
+    private ChannelGroup channelGroup;
+    private ChannelPipelineFactory channelPipelineFactory = new ChannelPipelineFactory() {
 
-		@Override
-		public void channelDisconnected(ChannelHandlerContext ctx,
-				ChannelStateEvent e) throws Exception {
-			super.channelDisconnected(ctx, e);
-			if( logger.isInfoEnabled() ) {
-				logger.info(format("client:%s was disconnected.", ctx.getChannel().getRemoteAddress()));
-			}
-		}
+        @Override
+        public ChannelPipeline getPipeline() throws Exception {
+            ChannelPipeline pipeline = Channels.pipeline();
+            pipeline.addLast("protocol-decoder", new ProtocolDecoder());
+            pipeline.addLast("rmi-decoder", new RmiDecoder());
+            pipeline.addLast("business-handler", businessHandler);
+            pipeline.addLast("protocol-encoder", new ProtocolEncoder());
+            pipeline.addLast("rmi-encoder", new RmiEncoder());
+            return pipeline;
+        }
 
+    };
 
+    /*
+     * 业务处理器
+     */
+    private SimpleChannelUpstreamHandler businessHandler = new SimpleChannelUpstreamHandler() {
 
-		@Override
-		public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
-				throws Exception {
+        @Override
+        public void channelConnected(ChannelHandlerContext ctx,
+                ChannelStateEvent e) throws Exception {
+            super.channelConnected(ctx, e);
+            channelGroup.add(ctx.getChannel());
+            if (logger.isInfoEnabled()) {
+                logger.info(format("client:%s was connected.", ctx.getChannel().getRemoteAddress()));
+            }
+        }
 
-			if( null == e.getMessage()
-					|| !(e.getMessage() instanceof RmiRequest)) {
-				super.messageReceived(ctx, e);
-			}
-			
-			final RmiRequest req = (RmiRequest)e.getMessage();
-			businessWorker.work(req, ctx.getChannel());
-		}
-		
-	};
-	
-	@Override
-	public void init() throws Exception {
-		bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
-				newCachedThreadPool(),
-				newCachedThreadPool()));
-		bootstrap.setPipelineFactory(channelPipelineFactory);
-		bootstrap.setOption("child.tcpNoDelay", true);
-		bootstrap.setOption("child.keepAlive", true);
-		channelGroup = new DefaultChannelGroup();
-		channelGroup.add(bootstrap.bind(address));
-		
-		if( logger.isInfoEnabled() ) {
-			logger.info(format("server was started at %s", address));
-		}
-	}
+        @Override
+        public void channelDisconnected(ChannelHandlerContext ctx,
+                ChannelStateEvent e) throws Exception {
+            super.channelDisconnected(ctx, e);
+            if (logger.isInfoEnabled()) {
+                logger.info(format("client:%s was disconnected.", ctx.getChannel().getRemoteAddress()));
+            }
+        }
 
-	@Override
-	public void destroy() throws Exception {
-		if( null != channelGroup ) {
-			channelGroup.close().awaitUninterruptibly();
-		}
-		if( null != bootstrap ) {
-			bootstrap.releaseExternalResources();
-		}
-		if( logger.isInfoEnabled() ) {
-			logger.info("server was shutdown.");
-		}
-	}
+        @Override
+        public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
+                throws Exception {
 
-	public void setAddress(InetSocketAddress address) {
-		this.address = address;
-	}
+            if (null == e.getMessage()
+                    || !(e.getMessage() instanceof RmiRequest)) {
+                super.messageReceived(ctx, e);
+            }
 
-	public void setBusinessWorker(BusinessWorker businessWorker) {
-		this.businessWorker = businessWorker;
-	}
+            final RmiRequest req = (RmiRequest) e.getMessage();
+            businessWorker.work(req, ctx.getChannel());
+        }
+
+    };
+
+    @Override
+    public void init() throws Exception {
+        bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
+                newCachedThreadPool(),
+                newCachedThreadPool()));
+        bootstrap.setPipelineFactory(channelPipelineFactory);
+        bootstrap.setOption("child.tcpNoDelay", true);
+        bootstrap.setOption("child.keepAlive", true);
+        channelGroup = new DefaultChannelGroup();
+        channelGroup.add(bootstrap.bind(address));
+
+        if (logger.isInfoEnabled()) {
+            logger.info(format("server was started at %s", address));
+        }
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        if (null != channelGroup) {
+            channelGroup.close().awaitUninterruptibly();
+        }
+        if (null != bootstrap) {
+            bootstrap.releaseExternalResources();
+        }
+        if (logger.isInfoEnabled()) {
+            logger.info("server was shutdown.");
+        }
+    }
+
+    public void setAddress(InetSocketAddress address) {
+        this.address = address;
+    }
+
+    public void setBusinessWorker(BusinessWorker businessWorker) {
+        this.businessWorker = businessWorker;
+    }
 
 }

@@ -29,120 +29,121 @@ import com.netflix.curator.retry.ExponentialBackoffRetry;
 
 public class ServiceDiscoverySupport implements Supporter, MessageSubscriber {
 
-	private final Logger logger = Logger.getLogger(Log4jConstant.ZK);
-	
-	private String zkServerLists;	//服务器地址列表
-	private int zkConnectTimeout;	//连接超时时间
-	private int zkSessionTimeout;	//会话超时时间
-	
-	private CuratorFramework client;
-	private Map<String,ConsumerService> services;
-	private List<PathChildrenCache> pathChildrenCaches = new ArrayList<PathChildrenCache>();
-	
-	private PathChildrenCacheListener listener = new PathChildrenCacheListener() {
+    private final Logger logger = Logger.getLogger(Log4jConstant.ZK);
 
-		@Override
-		public void childEvent(CuratorFramework client,
-				PathChildrenCacheEvent event) throws Exception {
-			
-			switch(event.getType()) {
-			case CHILD_ADDED :
-				postChannelChangedMessage(event, CREATE);
-				if( logger.isInfoEnabled() ) {
-					logger.info(format("receive service changed[create]. evnet=%s", event));
-				}
-				break;
-			case CHILD_REMOVED:
-				postChannelChangedMessage(event, REMOVE);
-				if( logger.isInfoEnabled() ) {
-					logger.info(format("receive service changed[remove]. evnet=%s", event));
-				}
-				break;
-			default :
-				if( logger.isInfoEnabled() ) {
-					logger.info(format("receive an unknow type event, ignore it. event=%s", event));
-				}
-			}
-		}
-		
-	};
-	
-	/**
-	 * 投递链接变更消息
-	 * @param event
-	 * @param type
-	 */
-	private void postChannelChangedMessage(PathChildrenCacheEvent event, ChannelChangedMessage.Type type) {
-		//"/excavator/nondurable/G1/1.0.0/176349878f5a1bb7df5b61741d981d35/127.0.0.1:3658";
-		final String[] strs = event.getData().getPath().split("/");
-		final String key = format("%s%s%s", strs[3]/*group*/,strs[4]/*version*/,strs[5]/*sign*/);
-		final String[] addressStrs = strs[6].split(":");
-		final InetSocketAddress address = new InetSocketAddress(addressStrs[0], Integer.valueOf(addressStrs[1]));
-		final String provider = addressStrs[2];
-		final ConsumerService service = services.get(key);
-		Messages.post(new ChannelChangedMessage(service, provider, address, type));
-	}
-	
-	@Override
-	public void init() throws Exception {
-		Messages.register(this, SubscribeServiceMessage.class);
-		services = Maps.newConcurrentMap();
-		client = newClient(
-				zkServerLists, 
-				zkSessionTimeout,
-				zkConnectTimeout,
-				new ExponentialBackoffRetry(500, 20));
-		client.start();
-	}
+    private String zkServerLists;	//服务器地址列表
+    private int zkConnectTimeout;	//连接超时时间
+    private int zkSessionTimeout;	//会话超时时间
 
-	@Override
-	public void destroy() throws Exception {
-		for( PathChildrenCache pathChildrenCache : pathChildrenCaches ) {
-			pathChildrenCache.close();
-		}
-		if( null != client ) {
-			client.close();
-		}
-	}
+    private CuratorFramework client;
+    private Map<String, ConsumerService> services;
+    private List<PathChildrenCache> pathChildrenCaches = new ArrayList<PathChildrenCache>();
 
-	@Override
-	public void receive(Message<?> msg) throws Exception {
-		
-		if( ! (msg instanceof SubscribeServiceMessage) ) {
-			return;
-		}
-		
-		final SubscribeServiceMessage ssMsg = (SubscribeServiceMessage)msg;
-		final ConsumerService service = ssMsg.getContent();
-		final String pref = format("/excavator/nondurable/%s/%s/%s",
-				service.getGroup(),
-				service.getVersion(),
-				service.getSign());
-		
-		final PathChildrenCache pathCache = new PathChildrenCache(client, pref, false);
-		pathChildrenCaches.add(pathCache);
-		try {
-			pathCache.getListenable().addListener(listener);
-			pathCache.start();
-			services.put(service.getKey(), service);
-		} catch (Exception e) {
-			logger.warn(format("subscribe %s was failed",pref) ,e);
-		} finally {
-			pathCache.close();
-		}
-		
-	}
-	
-	public void setZkServerLists(String zkServerLists) {
-		this.zkServerLists = zkServerLists;
-	}
+    private PathChildrenCacheListener listener = new PathChildrenCacheListener() {
 
-	public void setZkConnectTimeout(int zkConnectTimeout) {
-		this.zkConnectTimeout = zkConnectTimeout;
-	}
+        @Override
+        public void childEvent(CuratorFramework client,
+                PathChildrenCacheEvent event) throws Exception {
 
-	public void setZkSessionTimeout(int zkSessionTimeout) {
-		this.zkSessionTimeout = zkSessionTimeout;
-	}
+            switch (event.getType()) {
+                case CHILD_ADDED:
+                    postChannelChangedMessage(event, CREATE);
+                    if (logger.isInfoEnabled()) {
+                        logger.info(format("receive service changed[create]. evnet=%s", event));
+                    }
+                    break;
+                case CHILD_REMOVED:
+                    postChannelChangedMessage(event, REMOVE);
+                    if (logger.isInfoEnabled()) {
+                        logger.info(format("receive service changed[remove]. evnet=%s", event));
+                    }
+                    break;
+                default:
+                    if (logger.isInfoEnabled()) {
+                        logger.info(format("receive an unknow type event, ignore it. event=%s", event));
+                    }
+            }
+        }
+
+    };
+
+    /**
+     * 投递链接变更消息
+     *
+     * @param event
+     * @param type
+     */
+    private void postChannelChangedMessage(PathChildrenCacheEvent event, ChannelChangedMessage.Type type) {
+        //"/excavator/nondurable/G1/1.0.0/176349878f5a1bb7df5b61741d981d35/127.0.0.1:3658";
+        final String[] strs = event.getData().getPath().split("/");
+        final String key = format("%s%s%s", strs[3]/*group*/, strs[4]/*version*/, strs[5]/*sign*/);
+        final String[] addressStrs = strs[6].split(":");
+        final InetSocketAddress address = new InetSocketAddress(addressStrs[0], Integer.valueOf(addressStrs[1]));
+        final String provider = addressStrs[2];
+        final ConsumerService service = services.get(key);
+        Messages.post(new ChannelChangedMessage(service, provider, address, type));
+    }
+
+    @Override
+    public void init() throws Exception {
+        Messages.register(this, SubscribeServiceMessage.class);
+        services = Maps.newConcurrentMap();
+        client = newClient(
+                zkServerLists,
+                zkSessionTimeout,
+                zkConnectTimeout,
+                new ExponentialBackoffRetry(500, 20));
+        client.start();
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        for (PathChildrenCache pathChildrenCache : pathChildrenCaches) {
+            pathChildrenCache.close();
+        }
+        if (null != client) {
+            client.close();
+        }
+    }
+
+    @Override
+    public void receive(Message<?> msg) throws Exception {
+
+        if (!(msg instanceof SubscribeServiceMessage)) {
+            return;
+        }
+
+        final SubscribeServiceMessage ssMsg = (SubscribeServiceMessage) msg;
+        final ConsumerService service = ssMsg.getContent();
+        final String pref = format("/excavator/nondurable/%s/%s/%s",
+                service.getGroup(),
+                service.getVersion(),
+                service.getSign());
+
+        final PathChildrenCache pathCache = new PathChildrenCache(client, pref, false);
+        pathChildrenCaches.add(pathCache);
+        try {
+            pathCache.getListenable().addListener(listener);
+            pathCache.start();
+            services.put(service.getKey(), service);
+        } catch (Exception e) {
+            logger.warn(format("subscribe %s was failed", pref), e);
+        } finally {
+            pathCache.close();
+        }
+
+    }
+
+    public void setZkServerLists(String zkServerLists) {
+        this.zkServerLists = zkServerLists;
+    }
+
+    public void setZkConnectTimeout(int zkConnectTimeout) {
+        this.zkConnectTimeout = zkConnectTimeout;
+    }
+
+    public void setZkSessionTimeout(int zkSessionTimeout) {
+        this.zkSessionTimeout = zkSessionTimeout;
+    }
 
 }

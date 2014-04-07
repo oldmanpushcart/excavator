@@ -23,100 +23,101 @@ import com.googlecode.excavator.protocol.RmiRequest;
 
 /**
  * 消费端支撑者
+ *
  * @author vlinux
  *
  */
 public class ConsumerSupport implements Supporter, Receiver, ChannelRing {
 
-	private final Logger logger = Logger.getLogger(Log4jConstant.RECEIVER);
-	
-	private ChannelRingSupport channelRingSupport;
-	private ServiceDiscoverySupport serviceDiscoverySupport;
-	private Map<Long,Receiver.Wrapper> wrappers;
-	
-	@Override
-	public void init() throws Exception {
+    private final Logger logger = Logger.getLogger(Log4jConstant.RECEIVER);
 
-		// new 
-		channelRingSupport = new ChannelRingSupport();
-		serviceDiscoverySupport = new ServiceDiscoverySupport();
-		
-		// setter
-		channelRingSupport.setConnectTimeout(getConsumerConnectTimeout());
-		channelRingSupport.setReceiver(this);
-		serviceDiscoverySupport.setZkConnectTimeout(getZkConnectTimeout());
-		serviceDiscoverySupport.setZkSessionTimeout(getZkSessionTimeout());
-		serviceDiscoverySupport.setZkServerLists(getZkServerList());
-		
-		// init
-		channelRingSupport.init();
-		serviceDiscoverySupport.init();
-		
-		wrappers = Maps.newConcurrentMap();
-		
-	}
+    private ChannelRingSupport channelRingSupport;
+    private ServiceDiscoverySupport serviceDiscoverySupport;
+    private Map<Long, Receiver.Wrapper> wrappers;
 
-	@Override
-	public void destroy() throws Exception {
-		if( null != channelRingSupport ) {
-			channelRingSupport.destroy();
-		}
-		if( null != serviceDiscoverySupport ) {
-			serviceDiscoverySupport.destroy();
-		}
-	}
+    @Override
+    public void init() throws Exception {
 
-	@Override
-	public Receiver.Wrapper register(RmiRequest req) {
-		if( wrappers.containsKey(req.getId()) ) {
-			// 遇到重复的投递req
-			if( logger.isInfoEnabled() ) {
-				logger.info(format("an duplicate request existed, this one will ignore. req:%s", req));
-			}
-			return wrappers.get(req.getId());
-		}
-		
-		final Receiver.Wrapper wrapper = new Receiver.Wrapper(req);
-		wrappers.put(req.getId(), wrapper);
-		return wrapper;
-	}
+        // new 
+        channelRingSupport = new ChannelRingSupport();
+        serviceDiscoverySupport = new ServiceDiscoverySupport();
 
-	@Override
-	public Receiver.Wrapper unRegister(long id) {
-		return wrappers.remove(id);
-	}
+        // setter
+        channelRingSupport.setConnectTimeout(getConsumerConnectTimeout());
+        channelRingSupport.setReceiver(this);
+        serviceDiscoverySupport.setZkConnectTimeout(getZkConnectTimeout());
+        serviceDiscoverySupport.setZkSessionTimeout(getZkSessionTimeout());
+        serviceDiscoverySupport.setZkServerLists(getZkServerList());
 
-	@Override
-	public Receiver.Wrapper receive(long id) {
-		return wrappers.remove(id);
-	}
+        // init
+        channelRingSupport.init();
+        serviceDiscoverySupport.init();
 
-	@Override
-	public ChannelRing.Wrapper ring(
-			RmiRequest req) {
-		return channelRingSupport.ring(req);
-	}
+        wrappers = Maps.newConcurrentMap();
 
-	@Override
-	public List<Receiver.Wrapper> unRegister(Channel channel) {
-		final List<Receiver.Wrapper> removeWrappers = Lists.newArrayList();
-		Iterator<Map.Entry<Long,Receiver.Wrapper>> it = wrappers.entrySet().iterator();
-		while( it.hasNext() ) {
-			final Map.Entry<Long,Receiver.Wrapper> entry = it.next();
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        if (null != channelRingSupport) {
+            channelRingSupport.destroy();
+        }
+        if (null != serviceDiscoverySupport) {
+            serviceDiscoverySupport.destroy();
+        }
+    }
+
+    @Override
+    public Receiver.Wrapper register(RmiRequest req) {
+        if (wrappers.containsKey(req.getId())) {
+            // 遇到重复的投递req
+            if (logger.isInfoEnabled()) {
+                logger.info(format("an duplicate request existed, this one will ignore. req:%s", req));
+            }
+            return wrappers.get(req.getId());
+        }
+
+        final Receiver.Wrapper wrapper = new Receiver.Wrapper(req);
+        wrappers.put(req.getId(), wrapper);
+        return wrapper;
+    }
+
+    @Override
+    public Receiver.Wrapper unRegister(long id) {
+        return wrappers.remove(id);
+    }
+
+    @Override
+    public Receiver.Wrapper receive(long id) {
+        return wrappers.remove(id);
+    }
+
+    @Override
+    public ChannelRing.Wrapper ring(
+            RmiRequest req) {
+        return channelRingSupport.ring(req);
+    }
+
+    @Override
+    public List<Receiver.Wrapper> unRegister(Channel channel) {
+        final List<Receiver.Wrapper> removeWrappers = Lists.newArrayList();
+        Iterator<Map.Entry<Long, Receiver.Wrapper>> it = wrappers.entrySet().iterator();
+        while (it.hasNext()) {
+            final Map.Entry<Long, Receiver.Wrapper> entry = it.next();
 //			final long key = entry.getKey();
-			final Receiver.Wrapper wrapper = entry.getValue();
-			if( wrapper.getChannel() == channel ) {
-				removeWrappers.add(wrapper);
-				wrapper.getLock().lock();
-				try {
-					wrapper.getWaitResp().signal();
-				}finally {
-					wrapper.getLock().unlock();
-				}
-				it.remove();
-			}
-		}
-		return removeWrappers;
-	}
+            final Receiver.Wrapper wrapper = entry.getValue();
+            if (wrapper.getChannel() == channel) {
+                removeWrappers.add(wrapper);
+                wrapper.getLock().lock();
+                try {
+                    wrapper.getWaitResp().signal();
+                } finally {
+                    wrapper.getLock().unlock();
+                }
+                it.remove();
+            }
+        }
+        return removeWrappers;
+    }
 
 }

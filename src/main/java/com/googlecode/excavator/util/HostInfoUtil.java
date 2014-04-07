@@ -8,13 +8,17 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * 主机信息类
+ *
  * @author vlinux
  *
  */
 public final class HostInfoUtil {
 
-	private static String hostIp = StringUtils.EMPTY;;
-	static {
+    private static String hostIp = StringUtils.EMPTY;
+
+    ;
+
+    static {
 		
         try {
         	final Enumeration<NetworkInterface> netInterfaces = NetworkInterface.getNetworkInterfaces();
@@ -42,7 +46,7 @@ public final class HostInfoUtil {
 	 * @return
 	 */
 	public static String getHostFirstIp() {
-		return hostIp;
-	}
-	
+        return hostIp;
+    }
+
 }

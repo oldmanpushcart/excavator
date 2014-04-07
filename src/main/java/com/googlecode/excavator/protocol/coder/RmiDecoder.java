@@ -13,22 +13,23 @@ import com.googlecode.excavator.serializer.SerializerFactory;
 
 /**
  * rmi–≠“ÈΩ‚¬Î∆˜
+ *
  * @author vlinux
  *
  */
 public class RmiDecoder extends OneToOneDecoder {
 
-	private Serializer serializer = SerializerFactory.getInstance();
-	
-	@Override
-	protected Object decode(ChannelHandlerContext ctx, Channel channel,
-			Object msg) throws Exception {
-		Protocol pro = (Protocol)msg;
-		if( pro.getType() != TYPE_RMI ) {
-			return null;
-		}
-		RmiTracer rmiTracer = serializer.decode(pro.getDatas());
-		return rmiTracer;
-	}
+    private Serializer serializer = SerializerFactory.getInstance();
+
+    @Override
+    protected Object decode(ChannelHandlerContext ctx, Channel channel,
+            Object msg) throws Exception {
+        Protocol pro = (Protocol) msg;
+        if (pro.getType() != TYPE_RMI) {
+            return null;
+        }
+        RmiTracer rmiTracer = serializer.decode(pro.getDatas());
+        return rmiTracer;
+    }
 
 }

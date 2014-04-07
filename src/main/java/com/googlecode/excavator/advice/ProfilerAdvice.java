@@ -13,44 +13,45 @@ import com.googlecode.excavator.constant.Log4jConstant;
 
 /**
  * 性能点通知
+ *
  * @author vlinux
  *
  */
 @Direction
 public class ProfilerAdvice implements Advice {
 
-	private final Logger logger = Logger.getLogger(Log4jConstant.PROFILER);
-	
-	@Override
-	public void doBefore(Runtime runtime) throws Throwable {
-		if( isEnableProfiler() ) {
-			Profiler.start("profilter:"+runtime.getServiceInterface().getSimpleName()+"$"+runtime.getServiceMtd().getName());
-		}
-	}
+    private final Logger logger = Logger.getLogger(Log4jConstant.PROFILER);
 
-	@Override
-	public void doAfter(Runtime runtime, Object returnObj, long cost) {
-		if( isEnableProfiler() ) {
-			final long timeout = runtime.getReq().getTimeout();
-			if( timeout - cost <= getProfilerLimit() ) {
-				// 如果快接近超时时间(timeout超过一半)
-				final String dump = Profiler.dump()+"\n";
-				logger.warn(dump);
-			}
-		}
-	}
+    @Override
+    public void doBefore(Runtime runtime) throws Throwable {
+        if (isEnableProfiler()) {
+            Profiler.start("profilter:" + runtime.getServiceInterface().getSimpleName() + "$" + runtime.getServiceMtd().getName());
+        }
+    }
 
-	@Override
-	public void doThrow(Runtime runtime, Throwable throwable) {
+    @Override
+    public void doAfter(Runtime runtime, Object returnObj, long cost) {
+        if (isEnableProfiler()) {
+            final long timeout = runtime.getReq().getTimeout();
+            if (timeout - cost <= getProfilerLimit()) {
+                // 如果快接近超时时间(timeout超过一半)
+                final String dump = Profiler.dump() + "\n";
+                logger.warn(dump);
+            }
+        }
+    }
+
+    @Override
+    public void doThrow(Runtime runtime, Throwable throwable) {
 		// TODO Auto-generated method stub
-		
-	}
 
-	@Override
-	public void doFinally(Runtime runtime) {
-		if( PropertyConfiger.isEnableProfiler() ) {
-			Profiler.release();
-		}
-	}
-	
+    }
+
+    @Override
+    public void doFinally(Runtime runtime) {
+        if (PropertyConfiger.isEnableProfiler()) {
+            Profiler.release();
+        }
+    }
+
 }
