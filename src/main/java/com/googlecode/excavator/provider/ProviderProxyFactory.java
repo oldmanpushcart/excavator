@@ -29,8 +29,8 @@ public class ProviderProxyFactory {
 
     private final Logger agentLog = LoggerFactory.getLogger(LogConstant.AGENT);
 
-    private ProviderSupport support;
-    private Messager messager;
+    private final ProviderSupport support;
+    private final Messager messager;
 
     private ProviderProxyFactory() throws Exception {
         messager = new MemeryMessager();

@@ -59,8 +59,8 @@ public class ConsumerProxyFactory {
     private final Logger networkLog = LoggerFactory.getLogger(LogConstant.NETWORK);
     private final Logger agentLog = LoggerFactory.getLogger(LogConstant.AGENT);
 
-    private ConsumerSupport support;
-    private Messager messager;
+    private final ConsumerSupport support;
+    private final Messager messager;
 
     private ConsumerProxyFactory() throws Exception {
         messager = new MemeryMessager();
