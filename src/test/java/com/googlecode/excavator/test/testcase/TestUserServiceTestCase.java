@@ -5,7 +5,9 @@ import javax.annotation.Resource;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.googlecode.excavator.test.common.DaoException;
 import com.googlecode.excavator.test.common.ErrorCodeConstants;
+import com.googlecode.excavator.test.common.TestException;
 import com.googlecode.excavator.test.dao.TestUserDao;
 import com.googlecode.excavator.test.domain.SingleResultDO;
 import com.googlecode.excavator.test.domain.UserDO;
@@ -32,9 +34,26 @@ public class TestUserServiceTestCase extends TestCaseNG {
     }
     
     @Test(expected=UnsupportedOperationException.class)
-    public void test_login_throw_exception() throws Exception {
+    public void test_login_throw_UnsupportedOperationException() throws Exception {
         try {
             testUserServiceTarget.setTestUserDao(new MockTestUserDao());
+            testUserService.login("username_100000", "password_200000");   
+        } finally {
+            testUserServiceTarget.setTestUserDao(testUserDao);
+        }
+    }
+    
+    @Test(expected=TestException.class)
+    public void test_login_throw_TestException() throws Exception {
+        try {
+            testUserServiceTarget.setTestUserDao(new MockTestUserDao(){
+
+                @Override
+                public Long indexUserIdByUsername(String username) throws DaoException {
+                    throw new DaoException();
+                }
+                
+            });
             testUserService.login("username_100000", "password_200000");   
         } finally {
             testUserServiceTarget.setTestUserDao(testUserDao);
