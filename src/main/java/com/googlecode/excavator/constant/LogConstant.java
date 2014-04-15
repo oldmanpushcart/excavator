@@ -52,5 +52,10 @@ public class LogConstant {
      * profiler日志输出
      */
     public static final String PROFILER = "excavator-profiler";
+    
+    /**
+     * advice日志输出
+     */
+    public static final String ADVICE = "excavator-advice";
 
 }

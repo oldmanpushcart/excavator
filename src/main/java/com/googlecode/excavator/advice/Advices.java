@@ -2,8 +2,12 @@ package com.googlecode.excavator.advice;
 
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.Sets;
 import com.googlecode.excavator.Runtimes;
+import com.googlecode.excavator.constant.LogConstant;
 
 /**
  * 通知
@@ -23,7 +27,6 @@ public class Advices {
 
         /**
          * 前置通知
-         *
          * @param runtime
          * @throws Throwable
          */
@@ -31,33 +34,33 @@ public class Advices {
 
         /**
          * 后置通知
-         *
          * @param runtime
          * @param returnObj
          * @param cost
          * @throws Throwable
          */
-        void doAfter(Runtimes.Runtime runtime, Object returnObj, long cost);
+        void doAfter(Runtimes.Runtime runtime, Object returnObj, long cost) throws Throwable;
 
         /**
          * 异常通知
-         *
          * @param runtime
          * @param throwable
+         * @throws Throwable
          */
-        void doThrow(Runtimes.Runtime runtime, Throwable throwable);
+        void doThrow(Runtimes.Runtime runtime, Throwable throwable) throws Throwable;
 
         /**
          * 完成通知
-         *
          * @param runtime
+         * @throws Throwable
          */
-        void doFinally(Runtimes.Runtime runtime);
+        void doFinally(Runtimes.Runtime runtime) throws Throwable;
 
     }
 
     private static final Set<Advice> consumerAdvices = Sets.newLinkedHashSet();
     private static final Set<Advice> providerAdvices = Sets.newLinkedHashSet();
+    private static final Logger logger = LoggerFactory.getLogger(LogConstant.ADVICE);
 
     /**
      * 注册一个通知点
@@ -135,7 +138,11 @@ public class Advices {
      */
     public static void doBefores(Direction.Type type, Runtimes.Runtime runtime) throws Throwable {
         for (Advice advice : switchAdvices(type)) {
-            advice.doBefore(runtime);
+            try {
+                advice.doBefore(runtime);
+            } catch (Throwable t) {
+                logger.warn("advice before failed, request={};", runtime, t);
+            }
         }
     }
 
@@ -150,7 +157,7 @@ public class Advices {
             try {
                 advice.doAfter(runtime, returnObj, cost);
             } catch (Throwable t) {
-                //
+                logger.warn("advice after failed, request={};", runtime, t);
             }
         }
     }
@@ -167,7 +174,7 @@ public class Advices {
             try {
                 advice.doThrow(runtime, throwable);
             } catch (Throwable t) {
-                //
+                logger.warn("advice throw failed, request={};", runtime, t);
             }
         }
     }
@@ -183,7 +190,7 @@ public class Advices {
             try {
                 advice.doFinally(runtime);
             } catch (Throwable t) {
-                //
+                logger.warn("advice finally failed, request={};", runtime, t);
             }
         }
     }
