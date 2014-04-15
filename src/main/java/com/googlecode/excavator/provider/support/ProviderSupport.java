@@ -9,6 +9,7 @@ import static com.googlecode.excavator.PropertyConfiger.getZkSessionTimeout;
 import java.net.InetSocketAddress;
 
 import com.googlecode.excavator.Supporter;
+import com.googlecode.excavator.message.Messager;
 
 /**
  * 服务提供者支撑<br/>
@@ -27,24 +28,21 @@ public class ProviderSupport implements Supporter {
     private WorkerSupport workerSupport;
     private ServerSupport serverSupport;
     private ServiceRegisterSupport serviceRegisterSupport;
+    
+    private final Messager messager;
+
+    public ProviderSupport(Messager messager) {
+        this.messager = messager;
+    }
 
     @Override
     public void init() throws Exception {
 
         // new
-        workerSupport = new WorkerSupport();
-        serverSupport = new ServerSupport();
-        serviceRegisterSupport = new ServiceRegisterSupport();
-
-        // setter
         final InetSocketAddress address = getProviderAddress();
-        workerSupport.setPoolSize(getProviderWorkers());
-        serverSupport.setAddress(address);
-        serverSupport.setBusinessWorker(workerSupport);
-        serviceRegisterSupport.setAddress(address);
-        serviceRegisterSupport.setConnectTimeout(getZkConnectTimeout());
-        serviceRegisterSupport.setSessionTimeout(getZkSessionTimeout());
-        serviceRegisterSupport.setServers(getZkServerList());
+        workerSupport = new WorkerSupport(messager, getProviderWorkers());
+        serverSupport = new ServerSupport(address,workerSupport);
+        serviceRegisterSupport = new ServiceRegisterSupport(getZkServerList(),getZkConnectTimeout(),getZkSessionTimeout(),address,messager);
 
         // init
         workerSupport.init();

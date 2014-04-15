@@ -20,24 +20,45 @@ import com.googlecode.excavator.consumer.message.ChannelChangedMessage;
 import com.googlecode.excavator.consumer.message.SubscribeServiceMessage;
 import com.googlecode.excavator.message.Message;
 import com.googlecode.excavator.message.MessageSubscriber;
-import com.googlecode.excavator.message.Messages;
+import com.googlecode.excavator.message.Messager;
 import com.netflix.curator.framework.CuratorFramework;
 import com.netflix.curator.framework.recipes.cache.PathChildrenCache;
 import com.netflix.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import com.netflix.curator.framework.recipes.cache.PathChildrenCacheListener;
 import com.netflix.curator.retry.ExponentialBackoffRetry;
 
+/**
+ * 服务发现支撑
+ * @author vlinux
+ *
+ */
 public class ServiceDiscoverySupport implements Supporter, MessageSubscriber {
 
     private final Logger logger = Logger.getLogger(Log4jConstant.ZK);
 
-    private String zkServerLists;	//服务器地址列表
-    private int zkConnectTimeout;	//连接超时时间
-    private int zkSessionTimeout;	//会话超时时间
-
+    private final String zkServerLists;	//服务器地址列表
+    private final int zkConnectTimeout;	//连接超时时间
+    private final int zkSessionTimeout;	//会话超时时间
+    private final Messager messager;
+    
     private CuratorFramework client;
     private Map<String, ConsumerService> services;
     private List<PathChildrenCache> pathChildrenCaches = new ArrayList<PathChildrenCache>();
+
+    /**
+     * 构造函数
+     * @param zkServerLists
+     * @param zkConnectTimeout
+     * @param zkSessionTimeout
+     * @param messager
+     */
+    public ServiceDiscoverySupport(String zkServerLists, int zkConnectTimeout, int zkSessionTimeout,
+            Messager messager) {
+        this.zkServerLists = zkServerLists;
+        this.zkConnectTimeout = zkConnectTimeout;
+        this.zkSessionTimeout = zkSessionTimeout;
+        this.messager = messager;
+    }
 
     private PathChildrenCacheListener listener = new PathChildrenCacheListener() {
 
@@ -81,12 +102,12 @@ public class ServiceDiscoverySupport implements Supporter, MessageSubscriber {
         final InetSocketAddress address = new InetSocketAddress(addressStrs[0], Integer.valueOf(addressStrs[1]));
         final String provider = addressStrs[2];
         final ConsumerService service = services.get(key);
-        Messages.post(new ChannelChangedMessage(service, provider, address, type));
+        messager.post(new ChannelChangedMessage(service, provider, address, type));
     }
 
     @Override
     public void init() throws Exception {
-        Messages.register(this, SubscribeServiceMessage.class);
+        messager.register(this, SubscribeServiceMessage.class);
         services = Maps.newConcurrentMap();
         client = newClient(
                 zkServerLists,
@@ -132,18 +153,6 @@ public class ServiceDiscoverySupport implements Supporter, MessageSubscriber {
             pathCache.close();
         }
 
-    }
-
-    public void setZkServerLists(String zkServerLists) {
-        this.zkServerLists = zkServerLists;
-    }
-
-    public void setZkConnectTimeout(int zkConnectTimeout) {
-        this.zkConnectTimeout = zkConnectTimeout;
-    }
-
-    public void setZkSessionTimeout(int zkSessionTimeout) {
-        this.zkSessionTimeout = zkSessionTimeout;
     }
 
 }

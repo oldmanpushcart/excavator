@@ -13,7 +13,8 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.googlecode.excavator.constant.Log4jConstant;
-import com.googlecode.excavator.message.Messages;
+import com.googlecode.excavator.message.MemeryMessager;
+import com.googlecode.excavator.message.Messager;
 import com.googlecode.excavator.provider.message.RegisterServiceMessage;
 import com.googlecode.excavator.provider.support.ProviderSupport;
 
@@ -28,9 +29,11 @@ public class ProviderProxyFactory {
     private final Logger agentLog = Logger.getLogger(Log4jConstant.AGENT);
 
     private ProviderSupport support;
+    private Messager messager;
 
     private ProviderProxyFactory() throws Exception {
-        support = new ProviderSupport();
+        messager = new MemeryMessager();
+        support = new ProviderSupport(messager);
         support.init();
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -155,7 +158,7 @@ public class ProviderProxyFactory {
             final String sign = signature(method);
             final ProviderService providerService = new ProviderService(
                     group, version, sign, targetInterface, proxyObject, method, getFixTimeout(method, defaultTimeout, methodTimeoutMap));
-            Messages.post(new RegisterServiceMessage(providerService));
+            messager.post(new RegisterServiceMessage(providerService));
         }
     }
 

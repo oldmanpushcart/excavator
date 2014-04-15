@@ -16,7 +16,7 @@ import com.googlecode.excavator.Supporter;
 import com.googlecode.excavator.constant.Log4jConstant;
 import com.googlecode.excavator.message.Message;
 import com.googlecode.excavator.message.MessageSubscriber;
-import com.googlecode.excavator.message.Messages;
+import com.googlecode.excavator.message.Messager;
 import com.googlecode.excavator.provider.ProviderService;
 import com.googlecode.excavator.provider.message.RegisterServiceMessage;
 import com.netflix.curator.framework.CuratorFramework;
@@ -36,19 +36,38 @@ public class ServiceRegisterSupport implements Supporter, MessageSubscriber {
 
     private final Logger logger = Logger.getLogger(Log4jConstant.ZK);
 
-    private String servers;				//服务器地址列表
-    private int connectTimeout;			//连接超时时间
-    private int sessionTimeout;			//会话超时时间
-    private InetSocketAddress address;	//对外提供服务的网络地址
+    private final String servers;				//服务器地址列表
+    private final int connectTimeout;			//连接超时时间
+    private final int sessionTimeout;			//会话超时时间
+    private final InetSocketAddress address;	//对外提供服务的网络地址
+    private final Messager messager;
 
     private CuratorFramework client;
     private Map<String, ProviderService> services;
+
+    
+    /**
+     * 构造函数
+     * @param servers
+     * @param connectTimeout
+     * @param sessionTimeout
+     * @param address
+     * @param messager
+     */
+    public ServiceRegisterSupport(String servers, int connectTimeout, int sessionTimeout,
+            InetSocketAddress address, Messager messager) {
+        this.servers = servers;
+        this.connectTimeout = connectTimeout;
+        this.sessionTimeout = sessionTimeout;
+        this.address = address;
+        this.messager = messager;
+    }
 
     @Override
     public void init() throws Exception {
 
         // 关注注册服务消息
-        Messages.register(this, RegisterServiceMessage.class);
+        messager.register(this, RegisterServiceMessage.class);
 
         services = Maps.newConcurrentMap();
 
@@ -67,7 +86,7 @@ public class ServiceRegisterSupport implements Supporter, MessageSubscriber {
                         logger.info("zk-server reconnected, must reRegister right now.");
                     }
                     for (ProviderService providerService : services.values()) {
-                        Messages.post(new RegisterServiceMessage(providerService));
+                        messager.post(new RegisterServiceMessage(providerService));
                     }
                 }
             }
@@ -135,22 +154,6 @@ public class ServiceRegisterSupport implements Supporter, MessageSubscriber {
         if (null != client) {
             client.close();
         }
-    }
-
-    public void setServers(String servers) {
-        this.servers = servers;
-    }
-
-    public void setConnectTimeout(int connectTimeout) {
-        this.connectTimeout = connectTimeout;
-    }
-
-    public void setSessionTimeout(int sessionTimeout) {
-        this.sessionTimeout = sessionTimeout;
-    }
-
-    public void setAddress(InetSocketAddress address) {
-        this.address = address;
     }
 
 }

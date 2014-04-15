@@ -19,6 +19,7 @@ import com.googlecode.excavator.Supporter;
 import com.googlecode.excavator.constant.Log4jConstant;
 import com.googlecode.excavator.consumer.ChannelRing;
 import com.googlecode.excavator.consumer.Receiver;
+import com.googlecode.excavator.message.Messager;
 import com.googlecode.excavator.protocol.RmiRequest;
 
 /**
@@ -34,20 +35,29 @@ public class ConsumerSupport implements Supporter, Receiver, ChannelRing {
     private ChannelRingSupport channelRingSupport;
     private ServiceDiscoverySupport serviceDiscoverySupport;
     private Map<Long, Receiver.Wrapper> wrappers;
+    private Messager messager;
+    
+    /**
+     * ¹¹Ôìº¯Êý
+     * @param messager
+     */
+    public ConsumerSupport(Messager messager) {
+        this.messager = messager;
+    }
 
     @Override
     public void init() throws Exception {
 
-        // new 
-        channelRingSupport = new ChannelRingSupport();
-        serviceDiscoverySupport = new ServiceDiscoverySupport();
-
-        // setter
-        channelRingSupport.setConnectTimeout(getConsumerConnectTimeout());
-        channelRingSupport.setReceiver(this);
-        serviceDiscoverySupport.setZkConnectTimeout(getZkConnectTimeout());
-        serviceDiscoverySupport.setZkSessionTimeout(getZkSessionTimeout());
-        serviceDiscoverySupport.setZkServerLists(getZkServerList());
+        channelRingSupport = new ChannelRingSupport(
+            getConsumerConnectTimeout(),
+            this,
+            messager);
+        
+        serviceDiscoverySupport = new ServiceDiscoverySupport(
+            getZkServerList(),
+            getZkConnectTimeout(),
+            getZkSessionTimeout(),
+            messager);
 
         // init
         channelRingSupport.init();

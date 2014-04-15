@@ -36,7 +36,7 @@ import com.googlecode.excavator.consumer.Receiver;
 import com.googlecode.excavator.consumer.message.ChannelChangedMessage;
 import com.googlecode.excavator.message.Message;
 import com.googlecode.excavator.message.MessageSubscriber;
-import com.googlecode.excavator.message.Messages;
+import com.googlecode.excavator.message.Messager;
 import com.googlecode.excavator.protocol.RmiRequest;
 import com.googlecode.excavator.protocol.RmiResponse;
 import com.googlecode.excavator.protocol.coder.ProtocolDecoder;
@@ -54,12 +54,25 @@ public class ChannelRingSupport implements Supporter, ChannelRing, MessageSubscr
 
     private final Logger logger = Logger.getLogger(Log4jConstant.NETWORK);
 
-    private int connectTimeout;
-    private Receiver receiver;
+    private final int connectTimeout;
+    private final Receiver receiver;
+    private final Messager messager;
 
     private Map<String/*group+version+sign*/, Ring<ChannelRing.Wrapper>> serviceChannelRings;
     private ClientBootstrap bootstrap;
     private ChannelGroup channelGroup;
+    
+    /**
+     * 构造函数
+     * @param connectTimeout
+     * @param receiver
+     * @param messager
+     */
+    public ChannelRingSupport(int connectTimeout, Receiver receiver, Messager messager) {
+        this.connectTimeout = connectTimeout;
+        this.receiver = receiver;
+        this.messager = messager;
+    }
 
     /*
      * 业务处理器
@@ -108,7 +121,7 @@ public class ChannelRingSupport implements Supporter, ChannelRing, MessageSubscr
     @Override
     public void init() throws Exception {
 
-        Messages.register(this, ChannelChangedMessage.class);
+        messager.register(this, ChannelChangedMessage.class);
 
         serviceChannelRings = Maps.newConcurrentMap();
         channelGroup = new DefaultChannelGroup();
@@ -197,7 +210,7 @@ public class ChannelRingSupport implements Supporter, ChannelRing, MessageSubscr
             return wrapper;
         } else {
             // 如果不成功，则重复创建
-            Messages.post(ccMsg);
+            messager.post(ccMsg);
         }
 
         return null;
@@ -364,14 +377,6 @@ public class ChannelRingSupport implements Supporter, ChannelRing, MessageSubscr
 
         return wrapper;
 
-    }
-
-    public void setConnectTimeout(int connectTimeout) {
-        this.connectTimeout = connectTimeout;
-    }
-
-    public void setReceiver(Receiver receiver) {
-        this.receiver = receiver;
     }
 
 }

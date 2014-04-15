@@ -42,7 +42,8 @@ import com.googlecode.excavator.exception.ProviderNotFoundException;
 import com.googlecode.excavator.exception.ServiceNotFoundException;
 import com.googlecode.excavator.exception.ThreadPoolOverflowException;
 import com.googlecode.excavator.exception.UnknowCodeException;
-import com.googlecode.excavator.message.Messages;
+import com.googlecode.excavator.message.MemeryMessager;
+import com.googlecode.excavator.message.Messager;
 import com.googlecode.excavator.protocol.RmiRequest;
 import com.googlecode.excavator.protocol.RmiResponse;
 
@@ -58,9 +59,11 @@ public class ConsumerProxyFactory {
     private final Logger agentLog = Logger.getLogger(Log4jConstant.AGENT);
 
     private ConsumerSupport support;
+    private Messager messager;
 
     private ConsumerProxyFactory() throws Exception {
-        support = new ConsumerSupport();
+        messager = new MemeryMessager();
+        support = new ConsumerSupport(messager);
         support.init();
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -84,7 +87,12 @@ public class ConsumerProxyFactory {
      * @param methodTimeoutMap
      * @return
      */
-    private InvocationHandler createConsumerProxyHandler(final Class<?> targetInterface, final String group, final String version, final long defaultTimeout, final Map<String, Long> methodTimeoutMap) {
+    private InvocationHandler createConsumerProxyHandler(
+            final Class<?> targetInterface, 
+            final String group, 
+            final String version, 
+            final long defaultTimeout, 
+            final Map<String, Long> methodTimeoutMap) {
         return new InvocationHandler() {
 
             @Override
@@ -378,7 +386,7 @@ public class ConsumerProxyFactory {
             final long timeout = getFixTimeout(method, defaultTimeout, methodTimeoutMap);
             final String sign = signature(method);
             final ConsumerService service = new ConsumerService(group, version, sign, timeout);
-            Messages.post(new SubscribeServiceMessage(service));
+            messager.post(new SubscribeServiceMessage(service));
         }
     }
 

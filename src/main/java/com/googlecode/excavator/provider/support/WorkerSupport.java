@@ -32,7 +32,7 @@ import com.googlecode.excavator.Supporter;
 import com.googlecode.excavator.constant.Log4jConstant;
 import com.googlecode.excavator.message.Message;
 import com.googlecode.excavator.message.MessageSubscriber;
-import com.googlecode.excavator.message.Messages;
+import com.googlecode.excavator.message.Messager;
 import com.googlecode.excavator.protocol.RmiRequest;
 import com.googlecode.excavator.protocol.RmiResponse;
 import com.googlecode.excavator.provider.BusinessWorker;
@@ -50,15 +50,27 @@ public class WorkerSupport implements Supporter, MessageSubscriber,
 
     private final Logger logger = Logger.getLogger(Log4jConstant.WORKER);
 
-    private int poolSize; 							// 业务执行线程数量
+    private final Messager messager;
+    private final int poolSize; 					// 业务执行线程数量
+    
     private ExecutorService businessExecutor; 		// 业务执行者线程
     private Semaphore semaphore; 					// 流控信号量
     private Map<String, ProviderService> services; 	// 服务列表
 
+    /**
+     * 构造函数
+     * @param messager
+     * @param poolSize
+     */
+    public WorkerSupport(Messager messager, int poolSize) {
+        this.messager = messager;
+        this.poolSize = poolSize;
+    }
+
     @Override
     public void init() throws Exception {
 
-        Messages.register(this, RegisterServiceMessage.class);
+        messager.register(this, RegisterServiceMessage.class);
 
         // 初始化服务列表
         services = Maps.newConcurrentMap();
@@ -247,10 +259,6 @@ public class WorkerSupport implements Supporter, MessageSubscriber,
     private void handleOverflow(RmiRequest req, Channel channel) {
         RmiResponse respEvt = new RmiResponse(req, RESULT_CODE_FAILED_BIZ_THREAD_POOL_OVERFLOW);
         channel.write(respEvt);
-    }
-
-    public void setPoolSize(int poolSize) {
-        this.poolSize = poolSize;
     }
 
 }

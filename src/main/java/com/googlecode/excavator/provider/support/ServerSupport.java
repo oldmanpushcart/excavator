@@ -37,8 +37,8 @@ public class ServerSupport implements Supporter {
 
     private final Logger logger = Logger.getLogger(Log4jConstant.NETWORK);
 
-    private InetSocketAddress address;		//提供服务的地址
-    private BusinessWorker businessWorker;	//工作者
+    private final InetSocketAddress address;		//提供服务的地址
+    private final BusinessWorker businessWorker;	//工作者
 
     private ServerBootstrap bootstrap;
     private ChannelGroup channelGroup;
@@ -96,6 +96,17 @@ public class ServerSupport implements Supporter {
 
     };
 
+    
+    /**
+     * 构造函数
+     * @param address
+     * @param businessWorker
+     */
+    public ServerSupport(InetSocketAddress address, BusinessWorker businessWorker) {
+        this.address = address;
+        this.businessWorker = businessWorker;
+    }
+
     @Override
     public void init() throws Exception {
         bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
@@ -123,14 +134,6 @@ public class ServerSupport implements Supporter {
         if (logger.isInfoEnabled()) {
             logger.info("server was shutdown.");
         }
-    }
-
-    public void setAddress(InetSocketAddress address) {
-        this.address = address;
-    }
-
-    public void setBusinessWorker(BusinessWorker businessWorker) {
-        this.businessWorker = businessWorker;
     }
 
 }

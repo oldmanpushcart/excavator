@@ -14,36 +14,34 @@ import com.googlecode.excavator.Ring;
 import com.googlecode.excavator.constant.Log4jConstant;
 
 /**
- * 消息投递员<br/>
- * 用于程序内部多个support之间的相互通讯
- *
+ * 内存消息投递实现
  * @author vlinux
  *
  */
-public class Messages {
+public class MemeryMessager implements Messager {
 
-    private static final Logger logger = Logger.getLogger(Log4jConstant.MESSAGES);
-
+    private final Logger logger = Logger.getLogger(Log4jConstant.MESSAGES);
+    
     /*
      * 最多允许一条消息重复投递5次
      */
-    private static final int MAX_RETRY = 5;
+    private final int MAX_RETRY = 5;
 
     /*
      * 每次重复投递的惩罚时间步长
      * 最终的惩罚时间为 RETRY * PUNISH_TIME_STEP
      */
-    private static final long PUNISH_TIME_STEP = 500;
+    private final long PUNISH_TIME_STEP = 500;
 
     /*
      * 订阅关系网
      */
-    private static Map<Class<?>, Set<MessageSubscriber>> subscriptionRelationships = Maps.newHashMap();
+    private Map<Class<?>, Set<MessageSubscriber>> subscriptionRelationships = Maps.newHashMap();
 
     /*
      * 惩罚投递环
      */
-    private static Ring<Wrapper> punishPostRing = new Ring<Wrapper>();
+    private Ring<Wrapper> punishPostRing = new Ring<Wrapper>();
 
     /**
      * 惩罚投递封装
@@ -51,10 +49,10 @@ public class Messages {
      * @author vlinux
      *
      */
-    private static class Wrapper {
+    private class Wrapper {
 
-        private final Message<?> message;	//消息
-        private final long expirt;			//到期时间
+        private final Message<?> message;   //消息
+        private final long expirt;          //到期时间
 
         public Wrapper(Message<?> message, long expirt) {
             this.message = message;
@@ -66,7 +64,7 @@ public class Messages {
     /**
      * 惩罚消息投递员
      */
-    private static Thread deamon = new Thread("message-punish-deamon") {
+    private Thread deamon = new Thread("message-punish-deamon") {
 
         @Override
         public void run() {
@@ -98,7 +96,7 @@ public class Messages {
 
     };
 
-    static {
+    {
         deamon.setDaemon(true);
         deamon.start();
     }
@@ -108,7 +106,7 @@ public class Messages {
      *
      * @param msg
      */
-    public static void post(Message<?> msg) {
+    public void post(Message<?> msg) {
         if (null == msg) {
             return;
         }
@@ -136,7 +134,7 @@ public class Messages {
      *
      * @param msg
      */
-    private static void normalPost(Message<?> msg) {
+    private void normalPost(Message<?> msg) {
 
         final Class<?> clazz = msg.getClass();
         final Set<MessageSubscriber> subscribers = subscriptionRelationships.get(clazz);
@@ -149,8 +147,8 @@ public class Messages {
             try {
                 subscriber.receive(msg);
             } catch (Throwable t) {
-//				logger.warn(format("post msg:%s to subscriber:%s failed.", 
-//						msg, subscriber.getClass().getSimpleName()), t);
+//              logger.warn(format("post msg:%s to subscriber:%s failed.", 
+//                      msg, subscriber.getClass().getSimpleName()), t);
                 // 投递失败，主动再次投递，以惩罚
                 post(msg);
             }
@@ -163,7 +161,7 @@ public class Messages {
      *
      * @param msg
      */
-    private static void punishPost(Message<?> msg) {
+    private void punishPost(Message<?> msg) {
 
         long now = System.currentTimeMillis();
         long punishTime = msg.getReTry() * PUNISH_TIME_STEP;
@@ -178,7 +176,7 @@ public class Messages {
      * @param subscriber
      * @param msgTypes
      */
-    public static synchronized void register(MessageSubscriber subscriber, Class<?>... msgTypes) {
+    public synchronized void register(MessageSubscriber subscriber, Class<?>... msgTypes) {
         if (ArrayUtils.isEmpty(msgTypes)
                 || null == subscriber) {
             return;
@@ -194,5 +192,5 @@ public class Messages {
             subscribers.add(subscriber);
         }
     }
-
+    
 }
