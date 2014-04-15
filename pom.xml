@@ -23,9 +23,9 @@
 	</licenses>
 
 	<scm>
-		<connection>scm:svn:http://excavator.googlecode.com/svn/trunk/</connection>
-		<developerConnection>scm:svn:https://excavator.googlecode.com/svn/trunk/</developerConnection>
-		<url>http://excavator.googlecode.com/svn/trunk/</url>
+		<connection>scm:git@github.com:oldmanpushcart/excavator.git</connection>
+		<developerConnection>scm:git@github.com:oldmanpushcart/excavator.git</developerConnection>
+		<url>https://github.com/oldmanpushcart/excavator</url>
 	</scm>
 
 	<developers>
