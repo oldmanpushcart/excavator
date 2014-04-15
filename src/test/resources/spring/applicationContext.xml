@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+
+	<bean id="testUserDao"
+		class="com.googlecode.excavator.test.dao.impl.TestUserDaoImpl"/>
+
+	<bean id="testUserServiceTarget" 
+		class="com.googlecode.excavator.test.service.impl.TestUserServiceImpl">
+		<property name="testUserDao" ref="testUserDao"/>
+	</bean>
+		
+	<bean class="com.googlecode.excavator.spring.ExcavatorProviderSpringFactoryBean" lazy-init="false">
+		<property name="targetInterface"
+			value="com.googlecode.excavator.test.service.TestUserService" />
+		<property name="targetObject" ref="testUserServiceTarget" />
+		<property name="group" value="DEFAULT" />
+		<property name="version" value="1.0.0-test" />
+		<property name="defaultTimeout" value="60000" />
+	</bean>		
+
+	<bean id="testUserService"
+		class="com.googlecode.excavator.spring.ExcavatorConsumerSpringFactoryBean" lazy-init="false">
+		<property name="targetInterface"
+			value="com.googlecode.excavator.test.service.TestUserService" />
+		<property name="group" value="DEFAULT" />
+		<property name="version" value="1.0.0-test" />
+		<property name="defaultTimeout" value="60000" />
+	</bean>
+
+</beans>

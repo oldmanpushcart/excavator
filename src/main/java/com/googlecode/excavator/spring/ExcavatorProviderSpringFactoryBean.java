@@ -23,15 +23,18 @@ public class ExcavatorProviderSpringFactoryBean implements InitializingBean, Fac
 
     private Object targetObject;
     private ProviderProxyFactory factory;
+    
+    private Object object;
 
     @Override
     public void afterPropertiesSet() throws Exception {
         factory = ProviderProxyFactory.singleton();
+        this.object = factory.proxy(targetInterface, targetObject, group, version, defaultTimeout, methodTimeoutMap);
     }
 
     @Override
     public Object getObject() throws Exception {
-        return factory.proxy(targetInterface, targetObject, group, version, defaultTimeout, methodTimeoutMap);
+        return object;
     }
 
     @Override

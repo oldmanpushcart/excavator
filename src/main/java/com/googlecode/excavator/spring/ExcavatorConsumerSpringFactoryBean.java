@@ -22,15 +22,17 @@ public class ExcavatorConsumerSpringFactoryBean implements InitializingBean, Fac
     private Map<String, Long> methodTimeoutMap;
 
     private ConsumerProxyFactory factory;
-
-    @Override
-    public Object getObject() throws Exception {
-        return factory.proxy(targetInterface, group, version, defaultTimeout, methodTimeoutMap);
-    }
+    private Object object;
 
     @Override
     public void afterPropertiesSet() throws Exception {
         factory = ConsumerProxyFactory.singleton();
+        this.object = factory.proxy(targetInterface, group, version, defaultTimeout, methodTimeoutMap);
+    }
+    
+    @Override
+    public Object getObject() throws Exception {
+        return object;
     }
 
     @Override

@@ -382,10 +382,10 @@ public class ConsumerProxyFactory {
         if (ArrayUtils.isEmpty(methods)) {
             return;
         }
-        for (Method method : methods) {
-            final long timeout = getFixTimeout(method, defaultTimeout, methodTimeoutMap);
-            final String sign = signature(method);
-            final ConsumerService service = new ConsumerService(group, version, sign, timeout);
+        for (Method targetMethod : methods) {
+            final long timeout = getFixTimeout(targetMethod, defaultTimeout, methodTimeoutMap);
+            final String sign = signature(targetMethod);
+            final ConsumerService service = new ConsumerService(group, version, sign, timeout, targetInterface, targetMethod);
             messager.post(new SubscribeServiceMessage(service));
         }
     }

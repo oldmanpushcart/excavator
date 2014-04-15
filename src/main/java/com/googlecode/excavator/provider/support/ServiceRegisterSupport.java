@@ -119,7 +119,7 @@ public class ServiceRegisterSupport implements Supporter, MessageSubscriber {
                 client.create().creatingParentsIfNeeded().forPath(pref);
             }
         } catch (Exception e) {
-            //do nothing...
+            logger.warn("create parent path failed. pref={};", pref, e);
         }
 
         try {

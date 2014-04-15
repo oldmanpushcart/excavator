@@ -143,8 +143,6 @@ public class ServiceDiscoverySupport implements Supporter, MessageSubscriber {
             services.put(service.getKey(), service);
         } catch (Exception e) {
             logger.warn("subscribe {} was failed", pref, e);
-        } finally {
-            pathCache.close();
         }
 
     }

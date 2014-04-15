@@ -97,11 +97,14 @@ public class MemeryMessager implements Messager {
 
     };
 
-    {
+    /**
+     * 构造函数
+     */
+    public MemeryMessager() {
         deamon.setDaemon(true);
         deamon.start();
     }
-
+    
     /**
      * 投递消息
      *
