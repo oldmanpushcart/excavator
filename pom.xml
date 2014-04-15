@@ -25,7 +25,7 @@
 	<scm>
 		<connection>scm:git@github.com:oldmanpushcart/excavator.git</connection>
 		<developerConnection>scm:git@github.com:oldmanpushcart/excavator.git</developerConnection>
-		<url>https://github.com/oldmanpushcart/excavator</url>
+		<url>git@github.com:oldmanpushcart/excavator.git</url>
 	</scm>
 
 	<developers>
