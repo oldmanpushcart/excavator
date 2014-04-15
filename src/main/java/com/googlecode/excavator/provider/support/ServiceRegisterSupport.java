@@ -8,12 +8,13 @@ import static org.apache.zookeeper.CreateMode.EPHEMERAL;
 import java.net.InetSocketAddress;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 import com.googlecode.excavator.PropertyConfiger;
 import com.googlecode.excavator.Supporter;
-import com.googlecode.excavator.constant.Log4jConstant;
+import com.googlecode.excavator.constant.LogConstant;
 import com.googlecode.excavator.message.Message;
 import com.googlecode.excavator.message.MessageSubscriber;
 import com.googlecode.excavator.message.Messager;
@@ -34,7 +35,7 @@ import com.netflix.curator.retry.ExponentialBackoffRetry;
  */
 public class ServiceRegisterSupport implements Supporter, MessageSubscriber {
 
-    private final Logger logger = Logger.getLogger(Log4jConstant.ZK);
+    private final Logger logger = LoggerFactory.getLogger(LogConstant.ZK);
 
     private final String servers;				//服务器地址列表
     private final int connectTimeout;			//连接超时时间
@@ -107,9 +108,7 @@ public class ServiceRegisterSupport implements Supporter, MessageSubscriber {
         final String key = service.getKey();
 
         if (services.containsKey(key)) {
-            if (logger.isInfoEnabled()) {
-                logger.info(format("service:%s already registed.", service));
-            }
+            logger.info("service:{} already registed.", service);
         }
 
         final String pref = format("/excavator/nondurable/%s/%s/%s",
@@ -132,9 +131,7 @@ public class ServiceRegisterSupport implements Supporter, MessageSubscriber {
                 public void processResult(CuratorFramework client, CuratorEvent event)
                         throws Exception {
                     services.put(key, service);
-                    if (logger.isInfoEnabled()) {
-                        logger.info(format("register service:%s successed.", service));
-                    }
+                    logger.info("register service:{} successed.", service);
 
                 }
 
@@ -144,7 +141,7 @@ public class ServiceRegisterSupport implements Supporter, MessageSubscriber {
                     address.getPort(),
                     PropertyConfiger.getAppName()));
         } catch (Exception e) {
-            logger.warn(format("create service:%s path failed", service), e);
+            logger.warn("create service:{} path failed", service, e);
         }
 
     }

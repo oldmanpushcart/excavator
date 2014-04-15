@@ -2,14 +2,15 @@ package com.googlecode.excavator.protocol.coder;
 
 import static com.googlecode.excavator.protocol.Protocol.MAGIC;
 
-import org.apache.log4j.Logger;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.handler.codec.frame.FrameDecoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.googlecode.excavator.constant.Log4jConstant;
+import com.googlecode.excavator.constant.LogConstant;
 import com.googlecode.excavator.protocol.Protocol;
 
 /**
@@ -20,7 +21,7 @@ import com.googlecode.excavator.protocol.Protocol;
  */
 public class ProtocolDecoder extends FrameDecoder {
 
-    private final Logger logger = Logger.getLogger(Log4jConstant.NETWORK);
+    private final Logger logger = LoggerFactory.getLogger(LogConstant.NETWORK);
 
     @Override
     protected Object decode(ChannelHandlerContext ctx, Channel channel,

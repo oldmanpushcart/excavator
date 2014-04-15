@@ -13,18 +13,19 @@ import static com.googlecode.excavator.constant.PropertyConfigerConstant.TOKEN_E
 import static com.googlecode.excavator.constant.PropertyConfigerConstant.ZK_CONNECT_TIMEOUT;
 import static com.googlecode.excavator.constant.PropertyConfigerConstant.ZK_SERVER_LIST;
 import static com.googlecode.excavator.constant.PropertyConfigerConstant.ZK_SESSION_TIMEOUT;
+import static com.googlecode.excavator.serializer.SerializerFactory.SERIALIZER_NAME_HESSIAN;
 import static com.googlecode.excavator.util.HostInfoUtil.getHostFirstIp;
 import static java.lang.String.format;
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static com.googlecode.excavator.serializer.SerializerFactory.*;
 
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.googlecode.excavator.constant.Log4jConstant;
+import com.googlecode.excavator.constant.LogConstant;
 
 /**
  * 从指定的property文件中获取配置信息
@@ -35,7 +36,7 @@ import com.googlecode.excavator.constant.Log4jConstant;
 public final class PropertyConfiger {
 
     private static final String PROPERTY_CLASSPATH = "/excavator.properties";
-    private static final Logger logger = Logger.getLogger(Log4jConstant.CONFIG);
+    private static final Logger logger = LoggerFactory.getLogger(LogConstant.CONFIG);
 
     private static final Properties properties = new Properties();
 
@@ -102,7 +103,7 @@ public final class PropertyConfiger {
         if (!isBlank(cfgSerName)) {
             serializerName = cfgSerName;
         }
-        logger.info(format("%s=%s", SERIALIZER_NAME, serializerName));
+        logger.info("{}={}", SERIALIZER_NAME, serializerName);
     }
 
     /**
@@ -114,7 +115,7 @@ public final class PropertyConfiger {
         } catch (Exception e) {
             //
         }
-        logger.info(format("%s=%s", PROFILER_ENABLE, isEnableProfiler));
+        logger.info("{}={}", PROFILER_ENABLE, isEnableProfiler);
     }
 
     /**
@@ -126,7 +127,7 @@ public final class PropertyConfiger {
         } catch (Exception e) {
             //
         }
-        logger.info(format("%s=%s", PROFILER_LIMIT, profilerLimit));
+        logger.info("{}={}", PROFILER_LIMIT, profilerLimit);
     }
 
     /**
@@ -138,7 +139,7 @@ public final class PropertyConfiger {
         } catch (Exception e) {
             //
         }
-        logger.info(format("%s=%s", TOKEN_ENABLE, isEnableToken));
+        logger.info("{}={}", TOKEN_ENABLE, isEnableToken);
     }
 
     /**
@@ -187,7 +188,7 @@ public final class PropertyConfiger {
 
         providerAddress = new InetSocketAddress(ip, port);
 
-        logger.info(format("address=%s", providerAddress));
+        logger.info("address={}", providerAddress);
     }
 
     /**
@@ -200,7 +201,7 @@ public final class PropertyConfiger {
         } catch (Exception e) {
             //
         } finally {
-            logger.info(format("%s=%s", MONITOR_ENABLE, isEnableMonitor));
+            logger.info("{}={}", MONITOR_ENABLE, isEnableMonitor);
         }
     }
 
@@ -216,7 +217,7 @@ public final class PropertyConfiger {
         if (!appname.matches("[\\w|-]+")) {
             throw new IllegalArgumentException(format("%s must in [A-z0-9]", APPNAME));
         }
-        logger.info(format("%s=%s", APPNAME, appname));
+        logger.info("{}={}", APPNAME, appname);
     }
 
     /**

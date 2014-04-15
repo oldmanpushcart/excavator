@@ -11,7 +11,6 @@ import static com.googlecode.excavator.protocol.RmiResponse.RESULT_CODE_FAILED_S
 import static com.googlecode.excavator.protocol.RmiResponse.RESULT_CODE_FAILED_TIMEOUT;
 import static com.googlecode.excavator.protocol.RmiResponse.RESULT_CODE_SUCCESSED_RETURN;
 import static com.googlecode.excavator.protocol.RmiResponse.RESULT_CODE_SUCCESSED_THROWABLE;
-import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
 
 import java.io.Serializable;
@@ -23,13 +22,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 
-import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 import com.googlecode.excavator.Runtimes.Runtime;
 import com.googlecode.excavator.Supporter;
-import com.googlecode.excavator.constant.Log4jConstant;
+import com.googlecode.excavator.constant.LogConstant;
 import com.googlecode.excavator.message.Message;
 import com.googlecode.excavator.message.MessageSubscriber;
 import com.googlecode.excavator.message.Messager;
@@ -48,7 +48,7 @@ import com.googlecode.excavator.provider.message.RegisterServiceMessage;
 public class WorkerSupport implements Supporter, MessageSubscriber,
         BusinessWorker {
 
-    private final Logger logger = Logger.getLogger(Log4jConstant.WORKER);
+    private final Logger logger = LoggerFactory.getLogger(LogConstant.WORKER);
 
     private final Messager messager;
     private final int poolSize; 					// 业务执行线程数量
@@ -88,9 +88,7 @@ public class WorkerSupport implements Supporter, MessageSubscriber,
         // 初始化信号量
         semaphore = new Semaphore(poolSize);
 
-        if (logger.isInfoEnabled()) {
-            logger.info(format("worker init thread_pool size:%s", poolSize));
-        }
+        logger.info("worker init thread_pool size:{}", poolSize);
 
     }
 

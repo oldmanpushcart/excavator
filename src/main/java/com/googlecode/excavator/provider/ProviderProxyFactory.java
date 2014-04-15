@@ -10,9 +10,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.googlecode.excavator.constant.Log4jConstant;
+import com.googlecode.excavator.constant.LogConstant;
 import com.googlecode.excavator.message.MemeryMessager;
 import com.googlecode.excavator.message.Messager;
 import com.googlecode.excavator.provider.message.RegisterServiceMessage;
@@ -26,7 +27,7 @@ import com.googlecode.excavator.provider.support.ProviderSupport;
  */
 public class ProviderProxyFactory {
 
-    private final Logger agentLog = Logger.getLogger(Log4jConstant.AGENT);
+    private final Logger agentLog = LoggerFactory.getLogger(LogConstant.AGENT);
 
     private ProviderSupport support;
     private Messager messager;

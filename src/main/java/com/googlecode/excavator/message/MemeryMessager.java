@@ -6,12 +6,13 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.googlecode.excavator.Ring;
-import com.googlecode.excavator.constant.Log4jConstant;
+import com.googlecode.excavator.constant.LogConstant;
 
 /**
  * 内存消息投递实现
@@ -20,7 +21,7 @@ import com.googlecode.excavator.constant.Log4jConstant;
  */
 public class MemeryMessager implements Messager {
 
-    private final Logger logger = Logger.getLogger(Log4jConstant.MESSAGES);
+    private final Logger logger = LoggerFactory.getLogger(LogConstant.MESSAGES);
     
     /*
      * 最多允许一条消息重复投递5次

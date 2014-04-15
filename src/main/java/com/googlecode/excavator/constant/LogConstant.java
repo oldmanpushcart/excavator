@@ -1,12 +1,12 @@
 package com.googlecode.excavator.constant;
 
 /**
- * log4j的一些常量
+ * log的一些常量
  *
  * @author vlinux
  *
  */
-public class Log4jConstant {
+public class LogConstant {
 
     /**
      * agent相关的日志输出

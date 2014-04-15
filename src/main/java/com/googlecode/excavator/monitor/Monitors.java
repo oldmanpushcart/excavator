@@ -8,10 +8,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
-import com.googlecode.excavator.constant.Log4jConstant;
+import com.googlecode.excavator.constant.LogConstant;
 
 /**
  * 监控工具类
@@ -21,7 +22,7 @@ import com.googlecode.excavator.constant.Log4jConstant;
  */
 public final class Monitors {
 
-    private static final Logger logger = Logger.getLogger(Log4jConstant.MONITOR);
+    private static final Logger logger = LoggerFactory.getLogger(LogConstant.MONITOR);
     private static Map<String/*getKey()*/, AtomicReference<Monitor>> monitors = Maps.newConcurrentMap();
 
     private static final long MONITOR_SLEEP = 60000 * 2;//休眠2分钟

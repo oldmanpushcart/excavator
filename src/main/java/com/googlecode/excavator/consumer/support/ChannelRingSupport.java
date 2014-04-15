@@ -2,7 +2,6 @@ package com.googlecode.excavator.consumer.support;
 
 import static com.googlecode.excavator.consumer.message.ChannelChangedMessage.Type.CREATE;
 import static com.googlecode.excavator.consumer.message.ChannelChangedMessage.Type.REMOVE;
-import static java.lang.String.format;
 
 import java.net.InetSocketAddress;
 import java.util.Iterator;
@@ -12,7 +11,6 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
@@ -25,12 +23,14 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.googlecode.excavator.Ring;
 import com.googlecode.excavator.Supporter;
-import com.googlecode.excavator.constant.Log4jConstant;
+import com.googlecode.excavator.constant.LogConstant;
 import com.googlecode.excavator.consumer.ChannelRing;
 import com.googlecode.excavator.consumer.Receiver;
 import com.googlecode.excavator.consumer.message.ChannelChangedMessage;
@@ -52,7 +52,7 @@ import com.googlecode.excavator.protocol.coder.RmiEncoder;
  */
 public class ChannelRingSupport implements Supporter, ChannelRing, MessageSubscriber {
 
-    private final Logger logger = Logger.getLogger(Log4jConstant.NETWORK);
+    private final Logger logger = LoggerFactory.getLogger(LogConstant.NETWORK);
 
     private final int connectTimeout;
     private final Receiver receiver;
@@ -92,9 +92,7 @@ public class ChannelRingSupport implements Supporter, ChannelRing, MessageSubscr
             final Receiver.Wrapper wrapper = receiver.receive(resp.getId());
             if (null == wrapper) {
                 // 如果收到的response不在wrappers中，说明已经超时
-                if (logger.isInfoEnabled()) {
-                    logger.info(format("received response, but request was not found, looks like timeout. resp:%s", resp));
-                }
+                logger.info("received response, but request was not found, looks like timeout. resp:{}",resp);
             } else {
                 wrapper.setResponse(resp);
                 wrapper.signalWaitResp();
@@ -230,7 +228,7 @@ public class ChannelRingSupport implements Supporter, ChannelRing, MessageSubscr
         final Wrapper wrapper = getWrapper(ccMsg);
         if (null == wrapper) {
             // 如果本次找不到，本次忽略，等下次重试
-            logger.warn(format("create channel(%s) failed, ingore this time.", ccMsg.getAddress()));
+            logger.warn("create channel({}) failed, ingore this time.", ccMsg.getAddress());
             return;
         }
 
@@ -300,16 +298,14 @@ public class ChannelRingSupport implements Supporter, ChannelRing, MessageSubscr
         final ChannelFuture future = bootstrap.connect(address);
         future.awaitUninterruptibly();
         if (future.isCancelled()) {
-            logger.warn(format("connect is cancelled. address:%s", address));
+            logger.warn("connect is cancelled. address:{}", address);
             return null;
         }
         if (!future.isSuccess()) {
-            logger.warn(format("connect to %s failed.", address), future.getCause());
+            logger.warn("connect to {} failed.", address, future.getCause());
             return null;
         }
-        if (logger.isInfoEnabled()) {
-            logger.info(format("connect to %s successed.", address));
-        }
+        logger.info("connect to {} successed.", address);
         final Channel channel = future.getChannel();
         channelGroup.add(channel);
         return channel;
@@ -322,18 +318,14 @@ public class ChannelRingSupport implements Supporter, ChannelRing, MessageSubscr
 
         // key 不存在
         if (!serviceChannelRings.containsKey(key)) {
-            if (logger.isInfoEnabled()) {
-                logger.info(format("provider not found. key not found. req:%s", req));
-            }
+            logger.info("provider not found. key not found. req:{}", req);
             return null;
         }
 
         // ring 为空
         final Ring<ChannelRing.Wrapper> ring = serviceChannelRings.get(key);
         if (ring.isEmpty()) {
-            if (logger.isInfoEnabled()) {
-                logger.info(format("provider not found. ring is empty. req:%s", req));
-            }
+            logger.info("provider not found. ring is empty. req:{}", req);
             return null;
         }
 
@@ -342,9 +334,7 @@ public class ChannelRingSupport implements Supporter, ChannelRing, MessageSubscr
         try {
             wrapper = ring.ring();
         } catch (NoSuchElementException e) {
-            if (logger.isInfoEnabled()) {
-                logger.info(format("provider not found. no such elements. req:%s", req));
-            }
+            logger.info("provider not found. no such elements. req:{}", req);
             return null;
         }
 
@@ -362,9 +352,7 @@ public class ChannelRingSupport implements Supporter, ChannelRing, MessageSubscr
                     it.remove();
                     wrapper.getChannel().disconnect();
                     wrapper.getChannel().close();
-                    if (logger.isInfoEnabled()) {
-                        logger.info(format("%s maybe down. close this channel.", wrapper.getChannel().getRemoteAddress()));
-                    }
+                    logger.info("{} maybe down. close this channel.", wrapper.getChannel().getRemoteAddress());
 //					//同时投递一个消息告知需要重新连接
 //					final ConsumerService service = new ConsumerService(req.getGroup(),req.getVersion(),req.getSign(),req.getTimeout());
 //					final ChannelChangedMessage ccMsg = new ChannelChangedMessage(

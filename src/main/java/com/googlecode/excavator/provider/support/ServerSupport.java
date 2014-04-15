@@ -1,11 +1,9 @@
 package com.googlecode.excavator.provider.support;
 
-import static java.lang.String.format;
 import static java.util.concurrent.Executors.newCachedThreadPool;
 
 import java.net.InetSocketAddress;
 
-import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -17,9 +15,11 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.googlecode.excavator.Supporter;
-import com.googlecode.excavator.constant.Log4jConstant;
+import com.googlecode.excavator.constant.LogConstant;
 import com.googlecode.excavator.protocol.RmiRequest;
 import com.googlecode.excavator.protocol.coder.ProtocolDecoder;
 import com.googlecode.excavator.protocol.coder.ProtocolEncoder;
@@ -35,7 +35,7 @@ import com.googlecode.excavator.provider.BusinessWorker;
  */
 public class ServerSupport implements Supporter {
 
-    private final Logger logger = Logger.getLogger(Log4jConstant.NETWORK);
+    private final Logger logger = LoggerFactory.getLogger(LogConstant.NETWORK);
 
     private final InetSocketAddress address;		//提供服务的地址
     private final BusinessWorker businessWorker;	//工作者
@@ -67,18 +67,14 @@ public class ServerSupport implements Supporter {
                 ChannelStateEvent e) throws Exception {
             super.channelConnected(ctx, e);
             channelGroup.add(ctx.getChannel());
-            if (logger.isInfoEnabled()) {
-                logger.info(format("client:%s was connected.", ctx.getChannel().getRemoteAddress()));
-            }
+            logger.info("client:{} was connected.", ctx.getChannel().getRemoteAddress());
         }
 
         @Override
         public void channelDisconnected(ChannelHandlerContext ctx,
                 ChannelStateEvent e) throws Exception {
             super.channelDisconnected(ctx, e);
-            if (logger.isInfoEnabled()) {
-                logger.info(format("client:%s was disconnected.", ctx.getChannel().getRemoteAddress()));
-            }
+            logger.info("client:{} was disconnected.", ctx.getChannel().getRemoteAddress());
         }
 
         @Override
@@ -118,9 +114,7 @@ public class ServerSupport implements Supporter {
         channelGroup = new DefaultChannelGroup();
         channelGroup.add(bootstrap.bind(address));
 
-        if (logger.isInfoEnabled()) {
-            logger.info(format("server was started at %s", address));
-        }
+        logger.info("server was started at {}", address);
     }
 
     @Override

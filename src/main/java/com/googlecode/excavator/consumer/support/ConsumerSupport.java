@@ -4,19 +4,19 @@ import static com.googlecode.excavator.PropertyConfiger.getConsumerConnectTimeou
 import static com.googlecode.excavator.PropertyConfiger.getZkConnectTimeout;
 import static com.googlecode.excavator.PropertyConfiger.getZkServerList;
 import static com.googlecode.excavator.PropertyConfiger.getZkSessionTimeout;
-import static java.lang.String.format;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.googlecode.excavator.Supporter;
-import com.googlecode.excavator.constant.Log4jConstant;
+import com.googlecode.excavator.constant.LogConstant;
 import com.googlecode.excavator.consumer.ChannelRing;
 import com.googlecode.excavator.consumer.Receiver;
 import com.googlecode.excavator.message.Messager;
@@ -30,7 +30,7 @@ import com.googlecode.excavator.protocol.RmiRequest;
  */
 public class ConsumerSupport implements Supporter, Receiver, ChannelRing {
 
-    private final Logger logger = Logger.getLogger(Log4jConstant.RECEIVER);
+    private final Logger logger = LoggerFactory.getLogger(LogConstant.RECEIVER);
 
     private ChannelRingSupport channelRingSupport;
     private ServiceDiscoverySupport serviceDiscoverySupport;
@@ -81,9 +81,7 @@ public class ConsumerSupport implements Supporter, Receiver, ChannelRing {
     public Receiver.Wrapper register(RmiRequest req) {
         if (wrappers.containsKey(req.getId())) {
             // 遇到重复的投递req
-            if (logger.isInfoEnabled()) {
-                logger.info(format("an duplicate request existed, this one will ignore. req:%s", req));
-            }
+            logger.info("an duplicate request existed, this one will ignore. req:{}", req);
             return wrappers.get(req.getId());
         }
 

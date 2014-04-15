@@ -16,9 +16,9 @@ import static com.googlecode.excavator.util.SerializerUtil.changeToSerializable;
 import static com.googlecode.excavator.util.SerializerUtil.isSerializableType;
 import static com.googlecode.excavator.util.SignatureUtil.signature;
 import static com.googlecode.excavator.util.TimeoutUtil.getFixTimeout;
-import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
 import static org.apache.commons.lang.StringUtils.isBlank;
+import static java.lang.String.format;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -30,12 +30,13 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.googlecode.excavator.Runtimes;
-import com.googlecode.excavator.constant.Log4jConstant;
+import com.googlecode.excavator.constant.LogConstant;
 import com.googlecode.excavator.consumer.message.SubscribeServiceMessage;
 import com.googlecode.excavator.consumer.support.ConsumerSupport;
 import com.googlecode.excavator.exception.ProviderNotFoundException;
@@ -55,8 +56,8 @@ import com.googlecode.excavator.protocol.RmiResponse;
  */
 public class ConsumerProxyFactory {
 
-    private final Logger networkLog = Logger.getLogger(Log4jConstant.NETWORK);
-    private final Logger agentLog = Logger.getLogger(Log4jConstant.AGENT);
+    private final Logger networkLog = LoggerFactory.getLogger(LogConstant.NETWORK);
+    private final Logger agentLog = LoggerFactory.getLogger(LogConstant.AGENT);
 
     private ConsumerSupport support;
     private Messager messager;
@@ -245,8 +246,7 @@ public class ConsumerProxyFactory {
     private ChannelRing.Wrapper takeChannelRingWrapper(RmiRequest req) throws Throwable {
         ChannelRing.Wrapper channelWrapper = support.ring(req);
         if (null == channelWrapper) {
-            throw new ProviderNotFoundException(
-                    format("provider not found. req:%s", req));
+            throw new ProviderNotFoundException(format("provider not found. req:%s", req));
         }
         return channelWrapper;
     }
@@ -266,7 +266,7 @@ public class ConsumerProxyFactory {
             if (hasNetworkException(cause)) {
                 channelWrapper.setMaybeDown(true);
             }
-            networkLog.warn(format("write req:%s failed. maybeDown:%s", req, channelWrapper.isMaybeDown()), future.getCause());
+            networkLog.warn("write req:{} failed. maybeDown:{}", new Object[]{req, channelWrapper.isMaybeDown(), future.getCause()});
             throw future.getCause();
         }
     }

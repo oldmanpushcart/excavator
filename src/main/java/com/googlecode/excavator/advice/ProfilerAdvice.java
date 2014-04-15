@@ -3,13 +3,14 @@ package com.googlecode.excavator.advice;
 import static com.googlecode.excavator.PropertyConfiger.getProfilerLimit;
 import static com.googlecode.excavator.PropertyConfiger.isEnableProfiler;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.googlecode.excavator.Profiler;
 import com.googlecode.excavator.PropertyConfiger;
 import com.googlecode.excavator.Runtimes.Runtime;
 import com.googlecode.excavator.advice.Advices.Advice;
-import com.googlecode.excavator.constant.Log4jConstant;
+import com.googlecode.excavator.constant.LogConstant;
 
 /**
  * 性能点通知
@@ -20,7 +21,7 @@ import com.googlecode.excavator.constant.Log4jConstant;
 @Direction
 public class ProfilerAdvice implements Advice {
 
-    private final Logger logger = Logger.getLogger(Log4jConstant.PROFILER);
+    private final Logger logger = LoggerFactory.getLogger(LogConstant.PROFILER);
 
     @Override
     public void doBefore(Runtime runtime) throws Throwable {
