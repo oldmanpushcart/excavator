@@ -83,9 +83,7 @@ public class ServiceRegisterSupport implements Supporter, MessageSubscriber {
             @Override
             public void stateChanged(CuratorFramework client, ConnectionState newState) {
                 if (newState == RECONNECTED) {
-                    if (logger.isInfoEnabled()) {
-                        logger.info("zk-server reconnected, must reRegister right now.");
-                    }
+                    logger.info("zk-server reconnected, must reRegister right now.");
                     for (ProviderService providerService : services.values()) {
                         messager.post(new RegisterServiceMessage(providerService));
                     }
