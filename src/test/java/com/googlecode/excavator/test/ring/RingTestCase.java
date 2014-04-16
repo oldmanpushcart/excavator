@@ -6,6 +6,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
@@ -81,7 +82,7 @@ public class RingTestCase {
         final Ring<Integer> ring = buildRing(total);
         final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         final CountDownLatch countDown = new CountDownLatch(total);
-        
+        final AtomicInteger counter = new AtomicInteger();
         
         for( int index=0;index<total;index++ ) {
             
@@ -96,6 +97,7 @@ public class RingTestCase {
                             final int e = it.next();
                             if( e == i ) {
                                 it.remove();
+                                counter.incrementAndGet();
                             }
                         }
                     } finally {
@@ -106,8 +108,9 @@ public class RingTestCase {
             });
         }
         
-        countDown.await(10, TimeUnit.SECONDS);
+        countDown.await(30, TimeUnit.SECONDS);
         Assert.assertTrue(ring.isEmpty());
+        Assert.assertEquals(counter.get(), total);
         
     }
     
