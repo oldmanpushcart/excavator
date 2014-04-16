@@ -2,6 +2,7 @@ package com.googlecode.excavator.monitor;
 
 import static com.googlecode.excavator.PropertyConfiger.isEnableMonitor;
 
+import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -97,7 +98,14 @@ public final class Monitors {
             monitorSB.append(m.getFrom()).append("\t");
             monitorSB.append(m.getTo()).append("\t");
             monitorSB.append(m.getTimes()).append("\t");
-            monitorSB.append(m.getCost()).append("\t");
+            
+            // ¼ÆËãÆ½¾ùrt
+            if( m.getTimes() <= 0 ) {
+                monitorSB.append(0).append("\t");
+            } else {
+                final DecimalFormat df = new DecimalFormat("##.##");
+                monitorSB.append(df.format(m.getCost()*1.0/m.getTimes())).append("\t");   
+            }
             logger.info(monitorSB.toString());
         }
 

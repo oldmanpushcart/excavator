@@ -116,7 +116,7 @@ public class TestUserServiceTestCase extends TestCaseNG {
         final int start = 100000;
         final int end = 500000;
         final int total = end - start;
-        final ExecutorService executorService = Executors.newFixedThreadPool(20);
+        final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         final AtomicInteger countDown = new AtomicInteger(total);
         final AtomicInteger totalCounter = new AtomicInteger(0);
         final AtomicInteger successCounter = new AtomicInteger(0);
