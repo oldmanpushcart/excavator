@@ -2,7 +2,7 @@ package com.googlecode.excavator.provider;
 
 import org.jboss.netty.channel.Channel;
 
-import com.googlecode.excavator.protocol.RmiRequest;
+import com.googlecode.excavator.protocol.Protocol;
 
 /**
  * 业务工作者
@@ -15,9 +15,9 @@ public interface BusinessWorker {
     /**
      * 干活~
      *
-     * @param req
+     * @param proto
      * @param channel
      */
-    void work(RmiRequest req, Channel channel);
+    void work(Protocol proto, Channel channel);
 
 }

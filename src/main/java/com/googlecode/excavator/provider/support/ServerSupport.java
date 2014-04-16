@@ -20,11 +20,10 @@ import org.slf4j.LoggerFactory;
 
 import com.googlecode.excavator.Supporter;
 import com.googlecode.excavator.constant.LogConstant;
+import com.googlecode.excavator.protocol.Protocol;
 import com.googlecode.excavator.protocol.RmiRequest;
 import com.googlecode.excavator.protocol.coder.ProtocolDecoder;
 import com.googlecode.excavator.protocol.coder.ProtocolEncoder;
-import com.googlecode.excavator.protocol.coder.RmiDecoder;
-import com.googlecode.excavator.protocol.coder.RmiEncoder;
 import com.googlecode.excavator.provider.BusinessWorker;
 
 /**
@@ -48,10 +47,10 @@ public class ServerSupport implements Supporter {
         public ChannelPipeline getPipeline() throws Exception {
             ChannelPipeline pipeline = Channels.pipeline();
             pipeline.addLast("protocol-decoder", new ProtocolDecoder());
-            pipeline.addLast("rmi-decoder", new RmiDecoder());
+//            pipeline.addLast("rmi-decoder", new RmiDecoder());
             pipeline.addLast("business-handler", businessHandler);
             pipeline.addLast("protocol-encoder", new ProtocolEncoder());
-            pipeline.addLast("rmi-encoder", new RmiEncoder());
+//            pipeline.addLast("rmi-encoder", new RmiEncoder());
             return pipeline;
         }
 
@@ -86,8 +85,8 @@ public class ServerSupport implements Supporter {
                 super.messageReceived(ctx, e);
             }
 
-            final RmiRequest req = (RmiRequest) e.getMessage();
-            businessWorker.work(req, ctx.getChannel());
+            final Protocol pro = (Protocol) e.getMessage();
+            businessWorker.work(pro, ctx.getChannel());
         }
 
     };
