@@ -1,7 +1,9 @@
 package com.googlecode.excavator.test.testcase;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Resource;
@@ -114,10 +116,11 @@ public class TestUserServiceTestCase extends TestCaseNG {
     @Test
     public void test_mutil_login_auth_success() throws Exception {
         final int start = 100000;
-        final int end = 500000;
+        final int end = 101000;
         final int total = end - start;
         final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        final AtomicInteger countDown = new AtomicInteger(total);
+//        final AtomicInteger countDown = new AtomicInteger(total);
+        final CountDownLatch countDown = new CountDownLatch(total);
         final AtomicInteger totalCounter = new AtomicInteger(0);
         final AtomicInteger successCounter = new AtomicInteger(0);
         for( int i=start; i<end; i++ ) {
@@ -142,7 +145,7 @@ public class TestUserServiceTestCase extends TestCaseNG {
                         //
                     } finally {
                         totalCounter.incrementAndGet();
-                        countDown.decrementAndGet();
+                        countDown.countDown();
                     }
                     
                 }
@@ -150,7 +153,7 @@ public class TestUserServiceTestCase extends TestCaseNG {
             });
         }//for
         
-        while( countDown.get() != 0 );
+        countDown.await(60, TimeUnit.SECONDS);
         Assert.assertEquals(successCounter.get(), totalCounter.get());
     }
     

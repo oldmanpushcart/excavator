@@ -19,10 +19,10 @@ public class Ring<T> {
      * @param <T>
      */
     private class Node {
-
         Node front;			//前节点
         Node next;			//后节点
         T data;				//节点携带的数据
+        boolean isDeleted;  //删除标记
     }
 
     private Node current;	//当前节点
@@ -94,9 +94,18 @@ public class Ring<T> {
      * 清除环中所有数据
      */
     public void clean() {
-        current = null;
+        rwLock.writeLock().lock();
+        try {
+            current = null;
+        } finally {
+            rwLock.writeLock().unlock();
+        }
     }
 
+    /**
+     * 迭代遍历整个环
+     * @return
+     */
     public Iterator<T> iterator() {
         final Node _current = current;
         return new Iterator<T>() {
@@ -106,6 +115,10 @@ public class Ring<T> {
 
             @Override
             public boolean hasNext() {
+                // 修正first所指向的节点，因为此时有可能被并发删除了
+                while( null != first && first.isDeleted ) {
+                    first = first.front;
+                }
                 return first != itP;
             }
 
@@ -124,12 +137,14 @@ public class Ring<T> {
                 try {
                     // 要干掉最后一个元素，变成空环
                     if (itP.next == itP) {
-                        first = itP = null;
+                        first = null;
+                        itP = null;
                         clean();
                     } // 非最后一个元素，就按照规矩来
                     else {
                         itP.next.front = itP.front;
                         itP.front.next = itP.next;
+                        itP.isDeleted = true;
                     }
                 } finally {
                     rwLock.writeLock().unlock();
@@ -138,30 +153,6 @@ public class Ring<T> {
             }
 
         };
-    }
-
-    public static void main(String... args) {
-
-        Ring<String> ring = new Ring<String>();
-        ring.insert("luanjia");
-
-        {
-            Iterator<String> it = ring.iterator();
-            while (it.hasNext()) {
-                String name = it.next();
-                if (name.equals("luanjia")) {
-                    it.remove();
-                    System.out.println("nice!");
-                }
-            }
-        }
-
-        {
-            for (int i = 0; i < 10; i++) {
-                System.out.println("name=" + ring.ring());
-            }
-        }
-
     }
 
 }
