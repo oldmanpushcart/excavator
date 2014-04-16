@@ -1,5 +1,9 @@
 package com.googlecode.excavator.test.testcase;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.annotation.Resource;
 
 import org.junit.Assert;
@@ -33,6 +37,10 @@ public class TestUserServiceTestCase extends TestCaseNG {
         Assert.assertNotNull(testUserDao);
     }
     
+    /**
+     * µÇÂ¼Ê§°Ü£¬µ×²ãÅ×³ö·ÇDAOÒì³£
+     * @throws Exception
+     */
     @Test(expected=UnsupportedOperationException.class)
     public void test_login_throw_UnsupportedOperationException() throws Exception {
         try {
@@ -43,6 +51,10 @@ public class TestUserServiceTestCase extends TestCaseNG {
         }
     }
     
+    /**
+     * µÇÂ¼Ê§°Ü£¬µ×²ãÅ×³öDAOÒì³£
+     * @throws Exception
+     */
     @Test(expected=TestException.class)
     public void test_login_throw_TestException() throws Exception {
         try {
@@ -60,6 +72,10 @@ public class TestUserServiceTestCase extends TestCaseNG {
         }
     }
     
+    /**
+     * µÇÂ¼³É¹¦
+     * @throws Exception
+     */
     @Test
     public void test_login_success() throws Exception {
         final SingleResultDO<UserDO> result = testUserService.login("username_100000", "password_100000");
@@ -67,6 +83,10 @@ public class TestUserServiceTestCase extends TestCaseNG {
         Assert.assertTrue(result.isSuccess());
     }
     
+    /**
+     * µÇÂ¼Ê§°Ü£¬ÓÃ»§Ãû²»´æÔÚ
+     * @throws Exception
+     */
     @Test
     public void test_login_username_notfound() throws Exception {
         final SingleResultDO<UserDO> result = testUserService.login("username_000000", "password_100000");
@@ -75,12 +95,63 @@ public class TestUserServiceTestCase extends TestCaseNG {
         Assert.assertTrue(result.getErrors().containsKey(ErrorCodeConstants.ER_USER_NOT_EXISITED));
     }
     
+    /**
+     * µÇÂ¼Ê§°Ü£¬ÃÜÂë´íÎó
+     * @throws Exception
+     */
     @Test
     public void test_login_auth_failed() throws Exception {
         final SingleResultDO<UserDO> result = testUserService.login("username_100000", "password_200000");
         Assert.assertNotNull(result);
         Assert.assertFalse(result.isSuccess());
         Assert.assertTrue(result.getErrors().containsKey(ErrorCodeConstants.ER_LOGIN_AUTH_FAILED));
+    }
+    
+    /**
+     * ²¢·¢µÇÂ¼£¬µÇÂ¼³É¹¦
+     * @throws Exception
+     */
+    @Test
+    public void test_mutil_login_auth_success() throws Exception {
+        final int start = 100000;
+        final int end = 500000;
+        final int total = end - start;
+        final ExecutorService executorService = Executors.newFixedThreadPool(20);
+        final AtomicInteger countDown = new AtomicInteger(total);
+        final AtomicInteger totalCounter = new AtomicInteger(0);
+        final AtomicInteger successCounter = new AtomicInteger(0);
+        for( int i=start; i<end; i++ ) {
+            final int index = i;
+            executorService.execute(new Runnable(){
+
+                @Override
+                public void run() {
+                    try {
+                        final String username = "username_"+index;
+                        final String password = "password_"+index;
+                        final SingleResultDO<UserDO> result = testUserService.login(username, password);
+                        if( result.isSuccess() ) {
+                            final UserDO user = result.getData();
+                            if( null != user
+                                    && user.getUsername().equals(username)
+                                    && user.getPassword().equals(password)) {
+                                successCounter.incrementAndGet();
+                            }
+                        }
+                    } catch (TestException e) {
+                        //
+                    } finally {
+                        totalCounter.incrementAndGet();
+                        countDown.decrementAndGet();
+                    }
+                    
+                }
+                
+            });
+        }//for
+        
+        while( countDown.get() != 0 );
+        Assert.assertEquals(successCounter.get(), totalCounter.get());
     }
     
 }
