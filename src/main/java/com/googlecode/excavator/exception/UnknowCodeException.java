@@ -6,7 +6,7 @@ package com.googlecode.excavator.exception;
  * @author vlinux
  *
  */
-public class UnknowCodeException extends Exception {
+public class UnknowCodeException extends RuntimeException {
 
     private static final long serialVersionUID = -356285251040980622L;
 

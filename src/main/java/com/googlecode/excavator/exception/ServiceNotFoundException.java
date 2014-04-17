@@ -1,6 +1,6 @@
 package com.googlecode.excavator.exception;
 
-public class ServiceNotFoundException extends Exception {
+public class ServiceNotFoundException extends RuntimeException {
 
     private static final long serialVersionUID = 1556475261062935115L;
 

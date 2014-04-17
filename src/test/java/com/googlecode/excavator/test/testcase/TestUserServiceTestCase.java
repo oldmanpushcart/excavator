@@ -11,6 +11,8 @@ import javax.annotation.Resource;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.googlecode.excavator.exception.InvokeTimeoutException;
+import com.googlecode.excavator.exception.ProviderNotFoundException;
 import com.googlecode.excavator.test.common.DaoException;
 import com.googlecode.excavator.test.common.ErrorCodeConstants;
 import com.googlecode.excavator.test.common.TestException;
@@ -28,6 +30,9 @@ public class TestUserServiceTestCase extends TestCaseNG {
     
     @Resource(name="testUserService")
     private TestUserService testUserService;
+    
+    @Resource(name="testUserServiceNotFound")
+    private TestUserService testUserServiceNotFound;
     
     @Resource
     private TestUserServiceImpl testUserServiceTarget;
@@ -157,27 +162,31 @@ public class TestUserServiceTestCase extends TestCaseNG {
         Assert.assertEquals(successCounter.get(), totalCounter.get());
     }
     
-//    @Test(expected=TimeoutException.class)
-//    public void test_mutil_getById_timeout() throws Exception {
-//        try {
-//            testUserServiceTarget.setTestUserDao(new MockTestUserDao(){
-//
-//                @Override
-//                public UserDO getByUserId(long userId) throws DaoException {
-//                    try {
-//                        Thread.sleep(2000L);
-//                    } catch (InterruptedException e) {
-//                        //...
-//                    }
-//                    return testUserDao.getByUserId(userId);
-//                }
-//                
-//            });
-//            final SingleResultDO<UserDO> result = testUserService.getById(100000);
-//            System.out.println( result.isSuccess() );
-//        } finally {
-//            testUserServiceTarget.setTestUserDao(testUserDao);
-//        }
-//    }
+    @Test(expected=InvokeTimeoutException.class)
+    public void test_mutil_getById_timeout() throws Exception {
+        try {
+            testUserServiceTarget.setTestUserDao(new MockTestUserDao(){
+
+                @Override
+                public UserDO getByUserId(long userId) throws DaoException {
+                    try {
+                        Thread.sleep(2000L);
+                    } catch (InterruptedException e) {
+                        //...
+                    }
+                    return testUserDao.getByUserId(userId);
+                }
+                
+            });
+            testUserService.getById(100000);
+        } finally {
+            testUserServiceTarget.setTestUserDao(testUserDao);
+        }
+    }
+    
+    @Test(expected=ProviderNotFoundException.class)
+    public void test_provider_notfound() throws Exception {
+        testUserServiceNotFound.getById(10000);
+    }
     
 }

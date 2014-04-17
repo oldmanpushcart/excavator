@@ -33,5 +33,14 @@
 			</map>
 		</property>
 	</bean>
+	
+	<bean id="testUserServiceNotFound"
+		class="com.googlecode.excavator.spring.ExcavatorConsumerSpringFactoryBean" lazy-init="false">
+		<property name="targetInterface"
+			value="com.googlecode.excavator.test.service.TestUserService" />
+		<property name="group" value="DEFAULT" />
+		<property name="version" value="1.0.0-test-notfound" />
+		<property name="defaultTimeout" value="60000" />
+	</bean>
 
 </beans>

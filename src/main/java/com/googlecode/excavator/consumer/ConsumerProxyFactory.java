@@ -26,7 +26,6 @@ import java.lang.reflect.Proxy;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -39,6 +38,7 @@ import com.googlecode.excavator.Runtimes;
 import com.googlecode.excavator.constant.LogConstant;
 import com.googlecode.excavator.consumer.message.SubscribeServiceMessage;
 import com.googlecode.excavator.consumer.support.ConsumerSupport;
+import com.googlecode.excavator.exception.InvokeTimeoutException;
 import com.googlecode.excavator.exception.ProviderNotFoundException;
 import com.googlecode.excavator.exception.ServiceNotFoundException;
 import com.googlecode.excavator.exception.ThreadPoolOverflowException;
@@ -135,7 +135,7 @@ public class ConsumerProxyFactory {
 
                     final long leftTimeout = timeout - (currentTimeMillis() - start);
                     if (leftTimeout <= 0) {
-                        throw new TimeoutException(format("request:%s is waiting for write ready, but timeout:%dms", req, timeout));
+                        throw new InvokeTimeoutException(format("request:%s is waiting for write ready, but timeout:%dms", req, timeout));
                     }
                     waitForReceive(receiverWrapper, req, leftTimeout);
 
@@ -282,19 +282,19 @@ public class ConsumerProxyFactory {
      * @param req
      * @param leftTimeout
      * @return
-     * @throws TimeoutException
+     * @throws InvokeTimeoutException
      * @throws ProviderNotFoundException
      * @throws InterruptedException
      */
     private Receiver.Wrapper waitForReceive(Receiver.Wrapper wrapper, RmiRequest req, long leftTimeout)
-            throws TimeoutException, ProviderNotFoundException, InterruptedException {
+            throws InvokeTimeoutException, ProviderNotFoundException, InterruptedException {
 
         // 等待消息
         wrapper.getWaitResp().await(leftTimeout, TimeUnit.MILLISECONDS);
 
         // 没收到response事件说明是超时
         if (null == wrapper.getResponse()) {
-            throw new TimeoutException(format("req:%s timeout:%dms", req, req.getTimeout()));
+            throw new InvokeTimeoutException(format("req:%s timeout:%dms", req, req.getTimeout()));
         }
 
         return wrapper;
@@ -317,7 +317,7 @@ public class ConsumerProxyFactory {
         switch (resp.getCode()) {
             case RESULT_CODE_FAILED_TIMEOUT:
                 // 接收到response了，但是response告知已经超时
-                throw new TimeoutException(
+                throw new InvokeTimeoutException(
                         format("received response, but response report provider:%s was timeout. req:%s;resp:%s;",
                                 channel.getRemoteAddress(), reqPro, respPro));
             case RESULT_CODE_FAILED_BIZ_THREAD_POOL_OVERFLOW:

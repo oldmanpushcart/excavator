@@ -6,7 +6,7 @@ package com.googlecode.excavator.exception;
  * @author vlinux
  *
  */
-public class ThreadPoolOverflowException extends Exception {
+public class ThreadPoolOverflowException extends RuntimeException {
 
     private static final long serialVersionUID = -7391314305576555449L;
 

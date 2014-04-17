@@ -6,7 +6,7 @@ package com.googlecode.excavator.exception;
  * @author vlinux
  *
  */
-public class ProviderNotFoundException extends Exception {
+public class ProviderNotFoundException extends RuntimeException {
 
     private static final long serialVersionUID = 3148619368309599511L;
 
