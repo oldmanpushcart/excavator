@@ -13,4 +13,5 @@ public interface TestUserService {
     SingleResultDO<UserDO> getByUsername(String username) throws TestException;
     SingleResultDO<Collection<UserDO>> searchByUsername(String username) throws TestException;
     SingleResultDO<Collection<UserDO>> searchByRealname(String realname) throws TestException;
+    
 }

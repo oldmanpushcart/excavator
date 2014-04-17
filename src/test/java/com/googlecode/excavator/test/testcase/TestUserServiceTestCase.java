@@ -157,4 +157,27 @@ public class TestUserServiceTestCase extends TestCaseNG {
         Assert.assertEquals(successCounter.get(), totalCounter.get());
     }
     
+//    @Test(expected=TimeoutException.class)
+//    public void test_mutil_getById_timeout() throws Exception {
+//        try {
+//            testUserServiceTarget.setTestUserDao(new MockTestUserDao(){
+//
+//                @Override
+//                public UserDO getByUserId(long userId) throws DaoException {
+//                    try {
+//                        Thread.sleep(2000L);
+//                    } catch (InterruptedException e) {
+//                        //...
+//                    }
+//                    return testUserDao.getByUserId(userId);
+//                }
+//                
+//            });
+//            final SingleResultDO<UserDO> result = testUserService.getById(100000);
+//            System.out.println( result.isSuccess() );
+//        } finally {
+//            testUserServiceTarget.setTestUserDao(testUserDao);
+//        }
+//    }
+    
 }

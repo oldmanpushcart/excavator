@@ -26,6 +26,12 @@
 		<property name="group" value="DEFAULT" />
 		<property name="version" value="1.0.0-test" />
 		<property name="defaultTimeout" value="60000" />
+		<property name="methodTimeoutMap">
+			<map>
+				<entry key="login" value="500"/>
+				<entry key="getById" value="500"/>
+			</map>
+		</property>
 	</bean>
 
 </beans>
