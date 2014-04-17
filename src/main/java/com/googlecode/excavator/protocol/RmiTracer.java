@@ -5,7 +5,6 @@ import static java.lang.System.currentTimeMillis;
 
 import java.io.Serializable;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -20,27 +19,27 @@ public class RmiTracer implements Serializable {
 
     private static final long serialVersionUID = -940954284480781971L;
 
-    /**
-     * rmi的递增序列
-     */
-    private static transient final AtomicLong seq = new AtomicLong();
+//    /**
+//     * rmi的递增序列
+//     */
+//    private static transient final AtomicLong seq = new AtomicLong();
 
-    private final long id;
+//    private final long id;
     private final String token;
     private long timestamp;
 
-    /**
-     * 携带id和token的构造函数<br/>
-     * 用于rmi应答类构造函数的场景
-     *
-     * @param id
-     * @param token
-     */
-    public RmiTracer(long id, String token) {
-        this.id = id;
-        this.token = token;
-        this.timestamp = currentTimeMillis();
-    }
+//    /**
+//     * 携带id和token的构造函数<br/>
+//     * 用于rmi应答类构造函数的场景
+//     *
+//     * @param id
+//     * @param token
+//     */
+//    public RmiTracer(long id, String token) {
+//        this.id = id;
+//        this.token = token;
+//        this.timestamp = currentTimeMillis();
+//    }
 
     /**
      * 携带token的构造函数<br/>
@@ -49,7 +48,7 @@ public class RmiTracer implements Serializable {
      * @param token
      */
     public RmiTracer(String token) {
-        this.id = seq.incrementAndGet();
+//        this.id = seq.incrementAndGet();
         this.token = token;
         this.timestamp = currentTimeMillis();
     }
@@ -60,16 +59,16 @@ public class RmiTracer implements Serializable {
      * 用于最初发起rmi请求的场景
      */
     public RmiTracer() {
-        this.id = seq.incrementAndGet();
+//        this.id = seq.incrementAndGet();
         this.token = isEnableToken()
                 ? StringUtils.EMPTY
                 : UUID.randomUUID().toString();
         this.timestamp = currentTimeMillis();
     }
 
-    public long getId() {
-        return id;
-    }
+//    public long getId() {
+//        return id;
+//    }
 
     public String getToken() {
         return token;

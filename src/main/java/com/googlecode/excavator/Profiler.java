@@ -341,9 +341,11 @@ public class Profiler {
                 buffer.append('\n');
                 if (i == (subEntries.size() - 1)) {
                     subEntry.toString(buffer, prefix2 + "`---", prefix2 + "    "); // 最后一项
-                } else if (i == 0) {
-                    subEntry.toString(buffer, prefix2 + "+---", prefix2 + "|   "); // 第一项
-                } else {
+                } 
+//                else if (i == 0) {
+//                    subEntry.toString(buffer, prefix2 + "+---", prefix2 + "|   "); // 第一项
+//                } 
+                else {
                     subEntry.toString(buffer, prefix2 + "+---", prefix2 + "|   "); // 中间项
                 }
             }

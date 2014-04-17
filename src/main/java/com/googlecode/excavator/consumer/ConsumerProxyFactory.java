@@ -16,9 +16,9 @@ import static com.googlecode.excavator.util.SerializerUtil.changeToSerializable;
 import static com.googlecode.excavator.util.SerializerUtil.isSerializableType;
 import static com.googlecode.excavator.util.SignatureUtil.signature;
 import static com.googlecode.excavator.util.TimeoutUtil.getFixTimeout;
+import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static java.lang.String.format;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -45,8 +45,10 @@ import com.googlecode.excavator.exception.ThreadPoolOverflowException;
 import com.googlecode.excavator.exception.UnknowCodeException;
 import com.googlecode.excavator.message.MemeryMessager;
 import com.googlecode.excavator.message.Messager;
+import com.googlecode.excavator.protocol.Protocol;
 import com.googlecode.excavator.protocol.RmiRequest;
 import com.googlecode.excavator.protocol.RmiResponse;
+import com.googlecode.excavator.protocol.coder.Coders;
 
 /**
  * 消费者代理工厂
@@ -103,7 +105,9 @@ public class ConsumerProxyFactory {
                 final String sign = signature(method);
                 final long timeout = getFixTimeout(method, defaultTimeout, methodTimeoutMap);
                 final RmiRequest req = generateRmiRequest(group, version, args, sign, timeout);
-                final Receiver.Wrapper receiverWrapper = registerRecevier(req);
+                final Protocol reqPro = Coders.toProtocol(req);
+                
+                final Receiver.Wrapper receiverWrapper = registerRecevier(reqPro);
 
                 final ReentrantLock lock = receiverWrapper.getLock();
                 final long start = currentTimeMillis();
@@ -112,7 +116,7 @@ public class ConsumerProxyFactory {
                 lock.lock();
                 try {
                     try {
-                        channelWrapper = takeChannelRingWrapper(req);
+                        channelWrapper = takeChannelRingWrapper(reqPro, req);
 
                         // 将channel注入到请求channel中
                         receiverWrapper.setChannel(channelWrapper.getChannel());
@@ -123,9 +127,9 @@ public class ConsumerProxyFactory {
                                 (InetSocketAddress) channelWrapper.getChannel().getLocalAddress(),
                                 (InetSocketAddress) channelWrapper.getChannel().getRemoteAddress());
                         doBefores(CONSUMER, runtime);
-                        waitForWrite(req, channelWrapper);
+                        waitForWrite(reqPro, req, channelWrapper);
                     } catch (Throwable t) {
-                        support.unRegister(req.getId());
+                        support.unRegister(reqPro.getId());
                         throw t;
                     }
 
@@ -158,7 +162,7 @@ public class ConsumerProxyFactory {
              * @return
              * @throws ProviderNotFoundException
              */
-            private Receiver.Wrapper registerRecevier(final RmiRequest req)
+            private Receiver.Wrapper registerRecevier(final Protocol req)
                     throws ProviderNotFoundException {
                 final Receiver.Wrapper receiverWrapper = support.register(req);
                 // 没收到receiverWrapper说明服务不存在
@@ -238,13 +242,13 @@ public class ConsumerProxyFactory {
     /**
      * 获取channelRing的包装<br/>
      * 本质上就是获取一个可用的channel了
-     *
+     * @param reqPro
      * @param req
      * @return
      * @throws Throwable
      */
-    private ChannelRing.Wrapper takeChannelRingWrapper(RmiRequest req) throws Throwable {
-        ChannelRing.Wrapper channelWrapper = support.ring(req);
+    private ChannelRing.Wrapper takeChannelRingWrapper(Protocol reqPro, RmiRequest req) throws Throwable {
+        ChannelRing.Wrapper channelWrapper = support.ring(reqPro, req);
         if (null == channelWrapper) {
             throw new ProviderNotFoundException(format("provider not found. req:%s", req));
         }
@@ -253,13 +257,13 @@ public class ConsumerProxyFactory {
 
     /**
      * 写请求
-     *
-     * @param reqEvt
+     * @param reqPro
+     * @param req
      * @param channelWrapper
      * @throws Throwable
      */
-    private void waitForWrite(RmiRequest req, ChannelRing.Wrapper channelWrapper) throws Throwable {
-        ChannelFuture future = channelWrapper.getChannel().write(req);
+    private void waitForWrite(Protocol reqPro, RmiRequest req, ChannelRing.Wrapper channelWrapper) throws Throwable {
+        ChannelFuture future = channelWrapper.getChannel().write(reqPro);
         future.awaitUninterruptibly();
         if (!future.isSuccess()) {
             Throwable cause = future.getCause();
@@ -306,25 +310,26 @@ public class ConsumerProxyFactory {
      * @throws Throwable
      */
     private Object getReturnObject(Receiver.Wrapper receiverWrapper, ChannelRing.Wrapper channelWrapper) throws Throwable {
-        final RmiRequest req = receiverWrapper.getRequest();
-        final RmiResponse resp = receiverWrapper.getResponse();
+        final Protocol reqPro = receiverWrapper.getRequest();
+        final Protocol respPro = receiverWrapper.getResponse();
         final Channel channel = channelWrapper.getChannel();
+        final RmiResponse resp = (RmiResponse)Coders.toRmiTracer(respPro);
         switch (resp.getCode()) {
             case RESULT_CODE_FAILED_TIMEOUT:
                 // 接收到response了，但是response告知已经超时
                 throw new TimeoutException(
                         format("received response, but response report provider:%s was timeout. req:%s;resp:%s;",
-                                channel.getRemoteAddress(), req, resp));
+                                channel.getRemoteAddress(), reqPro, respPro));
             case RESULT_CODE_FAILED_BIZ_THREAD_POOL_OVERFLOW:
                 // 接收到response了，但是response告知服务方线程池满
                 throw new ThreadPoolOverflowException(
                         format("received response, but response report provider:%s was overflow. req:%s;resp:%s;",
-                                channel.getRemoteAddress(), req, resp));
+                                channel.getRemoteAddress(), reqPro, respPro));
             case RESULT_CODE_FAILED_SERVICE_NOT_FOUND:
                 // 接收到response了，但是response告知服务找不到
                 throw new ServiceNotFoundException(
                         format("received response, but response report provider:%s was not found the method. req:%s;resp:%s;",
-                                channel.getRemoteAddress(), req, resp));
+                                channel.getRemoteAddress(), reqPro, respPro));
             case RESULT_CODE_SUCCESSED_RETURN:
                 // 接收到response了，response报告服务端以return的形式返回
                 return resp.getObject();
@@ -335,7 +340,7 @@ public class ConsumerProxyFactory {
                 // 接收到response了，但是不知道response返回的状态码
                 throw new UnknowCodeException(
                         format("received response, but response's code is illegal. provider:%s;req:%s;resp:%s;",
-                                channel.getRemoteAddress(), req, resp));
+                                channel.getRemoteAddress(), reqPro, respPro));
         }//case
     }
 

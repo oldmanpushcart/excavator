@@ -31,7 +31,7 @@ public class ProtocolDecoder extends FrameDecoder {
         // 如果取出为null，说明是第一次来
         if (null == pro) {
             pro = new Protocol();
-            if (buffer.readableBytes() < 48/* magic(8)+type(8)+len(32) */) {
+            if (buffer.readableBytes() < 112/* magic(8)+id(64)+type(8)+len(32) */) {
                 // 没有到达头部所需要的56个字节，直接挂起
                 return null;
             } else {
@@ -61,6 +61,7 @@ public class ProtocolDecoder extends FrameDecoder {
      */
     private void fillHeader(Protocol pro, ChannelBuffer buffer) {
         final short magic = buffer.readShort();
+        final long id = buffer.readLong();
         final byte type = buffer.readByte();
         final int len = buffer.readInt();
 
@@ -69,6 +70,7 @@ public class ProtocolDecoder extends FrameDecoder {
                     String.format("magic=%d does not match, connection will disconnect!", magic));
         }
 
+        pro.setId(id);
         pro.setType(type);
         pro.setLength(len);
 

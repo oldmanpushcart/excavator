@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.netty.channel.Channel;
 
+import com.googlecode.excavator.protocol.Protocol;
 import com.googlecode.excavator.protocol.RmiRequest;
 
 /**
@@ -72,10 +73,10 @@ public interface ChannelRing {
 
     /**
      * 根据请求获取所需的链接
-     *
+     * @param reqPro
      * @param req
      * @return
      */
-    ChannelRing.Wrapper ring(RmiRequest req);
+    ChannelRing.Wrapper ring(Protocol reqPro, RmiRequest req);
 
 }

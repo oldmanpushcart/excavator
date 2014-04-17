@@ -31,6 +31,7 @@ public class ProtocolEncoder extends OneToOneEncoder {
 
         ChannelBuffer buffer = ChannelBuffers.dynamicBuffer();
         buffer.writeShort(MAGIC);
+        buffer.writeLong(protocol.getId());
         buffer.writeByte(protocol.getType());
         buffer.writeInt(protocol.getLength());
         buffer.writeBytes(protocol.getDatas());

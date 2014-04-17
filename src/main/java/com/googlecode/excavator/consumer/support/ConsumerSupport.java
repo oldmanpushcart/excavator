@@ -20,6 +20,7 @@ import com.googlecode.excavator.constant.LogConstant;
 import com.googlecode.excavator.consumer.ChannelRing;
 import com.googlecode.excavator.consumer.Receiver;
 import com.googlecode.excavator.message.Messager;
+import com.googlecode.excavator.protocol.Protocol;
 import com.googlecode.excavator.protocol.RmiRequest;
 
 /**
@@ -78,7 +79,7 @@ public class ConsumerSupport implements Supporter, Receiver, ChannelRing {
     }
 
     @Override
-    public Receiver.Wrapper register(RmiRequest req) {
+    public Receiver.Wrapper register(Protocol req) {
         if (wrappers.containsKey(req.getId())) {
             // 遇到重复的投递req
             logger.info("an duplicate request existed, this one will ignore. req:{}", req);
@@ -101,9 +102,8 @@ public class ConsumerSupport implements Supporter, Receiver, ChannelRing {
     }
 
     @Override
-    public ChannelRing.Wrapper ring(
-            RmiRequest req) {
-        return channelRingSupport.ring(req);
+    public ChannelRing.Wrapper ring(Protocol reqPro, RmiRequest req) {
+        return channelRingSupport.ring(reqPro, req);
     }
 
     @Override

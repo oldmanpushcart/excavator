@@ -1,5 +1,7 @@
 package com.googlecode.excavator.protocol;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * 网络通讯协议
  *
@@ -22,7 +24,17 @@ public final class Protocol {
      * 协议类型:心跳
      */
     public static byte TYPE_HEARTBEAT = 0x02;
+    
+    /**
+     * rmi的递增序列
+     */
+    private static transient final AtomicLong seq = new AtomicLong();
 
+    public Protocol() {
+        this.id = seq.incrementAndGet();
+    }
+    
+    private long id;
     private byte type;		//类型
     private int length;		//数据段长度
     private byte[] datas;	//数据段
@@ -49,6 +61,14 @@ public final class Protocol {
 
     public void setDatas(byte[] datas) {
         this.datas = datas;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
 }

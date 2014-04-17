@@ -49,7 +49,7 @@ public final class RmiResponse extends RmiTracer {
      * @param object
      */
     public RmiResponse(RmiRequest req, short code, Serializable object) {
-        super(req.getId(), req.getToken());
+        super(req.getToken());
         this.code = code;
         this.object = object;
     }
@@ -62,7 +62,7 @@ public final class RmiResponse extends RmiTracer {
      * @param code
      */
     public RmiResponse(RmiRequest req, short code) {
-        super(req.getId(), req.getToken());
+        super(req.getToken());
         this.code = code;
         this.object = null;
     }
@@ -77,7 +77,7 @@ public final class RmiResponse extends RmiTracer {
 
     @Override
     public String toString() {
-        return String.format("RESP[id=%s;token=%s;code=%s;]", getId(), getToken(), code);
+        return String.format("RESP[token=%s;code=%s;]", getToken(), code);
     }
 
 }

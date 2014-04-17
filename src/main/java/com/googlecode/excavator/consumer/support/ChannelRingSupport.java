@@ -37,12 +37,11 @@ import com.googlecode.excavator.consumer.message.ChannelChangedMessage;
 import com.googlecode.excavator.message.Message;
 import com.googlecode.excavator.message.MessageSubscriber;
 import com.googlecode.excavator.message.Messager;
+import com.googlecode.excavator.protocol.Protocol;
 import com.googlecode.excavator.protocol.RmiRequest;
 import com.googlecode.excavator.protocol.RmiResponse;
 import com.googlecode.excavator.protocol.coder.ProtocolDecoder;
 import com.googlecode.excavator.protocol.coder.ProtocolEncoder;
-import com.googlecode.excavator.protocol.coder.RmiDecoder;
-import com.googlecode.excavator.protocol.coder.RmiEncoder;
 
 /**
  * 链接环支撑者
@@ -88,13 +87,13 @@ public class ChannelRingSupport implements Supporter, ChannelRing, MessageSubscr
                 super.messageReceived(ctx, e);
             }
 
-            final RmiResponse resp = (RmiResponse) e.getMessage();
-            final Receiver.Wrapper wrapper = receiver.receive(resp.getId());
+            final Protocol respPro = (Protocol) e.getMessage();
+            final Receiver.Wrapper wrapper = receiver.receive(respPro.getId());
             if (null == wrapper) {
                 // 如果收到的response不在wrappers中，说明已经超时
-                logger.info("received response, but request was not found, looks like timeout. resp:{}",resp);
+                logger.info("received response, but request was not found, looks like timeout. resp:{}",respPro);
             } else {
-                wrapper.setResponse(resp);
+                wrapper.setResponse(respPro);
                 wrapper.signalWaitResp();
             }
         }
@@ -107,10 +106,10 @@ public class ChannelRingSupport implements Supporter, ChannelRing, MessageSubscr
         public ChannelPipeline getPipeline() throws Exception {
             ChannelPipeline pipeline = Channels.pipeline();
             pipeline.addLast("protocol-decoder", new ProtocolDecoder());
-            pipeline.addLast("rmi-decoder", new RmiDecoder());
+//            pipeline.addLast("rmi-decoder", new RmiDecoder());
             pipeline.addLast("businessHandler", businessHandler);
             pipeline.addLast("protocol-encoder", new ProtocolEncoder());
-            pipeline.addLast("rmi-encoder", new RmiEncoder());
+//            pipeline.addLast("rmi-encoder", new RmiEncoder());
             return pipeline;
         }
 
@@ -312,7 +311,7 @@ public class ChannelRingSupport implements Supporter, ChannelRing, MessageSubscr
     }
 
     @Override
-    public ChannelRing.Wrapper ring(RmiRequest req) {
+    public ChannelRing.Wrapper ring(Protocol reqPro, RmiRequest req) {
 
         final String key = req.getKey();
 

@@ -96,8 +96,8 @@ public final class RmiRequest extends RmiTracer implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("REQ[id=%s;token=%s;group=%s;version=%s;sign=%s;consumer=%s;timeout=%s;]",
-                getId(), getToken(), group, version, sign, appName, timeout);
+        return String.format("REQ[token=%s;group=%s;version=%s;sign=%s;consumer=%s;timeout=%s;]",
+                getToken(), group, version, sign, appName, timeout);
     }
 
 }

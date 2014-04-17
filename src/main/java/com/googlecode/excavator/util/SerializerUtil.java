@@ -72,5 +72,5 @@ public final class SerializerUtil {
         }
         return serializables;
     }
-
+    
 }

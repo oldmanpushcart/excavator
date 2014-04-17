@@ -121,12 +121,12 @@ public class WorkerSupport implements Supporter, MessageSubscriber,
 
     /**
      * 在这里执行具体的调用
-     *
+     * @param reqPro
      * @param req
      * @param channel
      * @param service
      */
-    private void doWork(RmiRequest req, Channel channel, ProviderService service) {
+    private void doWork(Protocol reqPro, RmiRequest req, Channel channel, ProviderService service) {
         final long start = currentTimeMillis();
         final Object serviceObj = service.getServiceObject();
         final Method serviceMtd = service.getServiceMethod();
@@ -145,14 +145,14 @@ public class WorkerSupport implements Supporter, MessageSubscriber,
             try {
                 final Serializable returnObj = (Serializable) serviceMtd.invoke(serviceObj, (Object[]) req.getArgs());
                 doAfter(PROVIDER, runtime, returnObj, currentTimeMillis() - start/*cost*/);
-                handleNormal(returnObj, req, channel);
+                handleNormal(reqPro, returnObj, req, channel);
             } catch (Throwable t) {
                 throw t.getCause().getCause().getCause();
             }
 
         } catch (Throwable t) {
             doThrow(PROVIDER, runtime, t);
-            handleThrowable(t, req, channel);
+            handleThrowable(reqPro, t, req, channel);
         } finally {
             semaphore.release();
             doFinally(PROVIDER, runtime);
@@ -160,23 +160,23 @@ public class WorkerSupport implements Supporter, MessageSubscriber,
     }
 
     @Override
-    public void work(final Protocol pro, final Channel channel) {
+    public void work(final Protocol reqPro, final Channel channel) {
 
         businessExecutor.execute(new Runnable() {
 
             /**
              * 将协议对象转换为请求对象
-             * @param pro
+             * @param reqPro
              * @return
              */
-            private RmiRequest convertToReq(Protocol pro) {
-                if (pro.getType() != TYPE_RMI) {
-                    logger.warn("ingore this request, because proto.type was {}, need TYPE_RMI. remote={};", pro.getType(), channel.getRemoteAddress());
+            private RmiRequest convertToReq(Protocol reqPro) {
+                if (reqPro.getType() != TYPE_RMI) {
+                    logger.warn("ingore this request, because proto.type was {}, need TYPE_RMI. remote={};", reqPro.getType(), channel.getRemoteAddress());
                     return null;
                 }
                 final RmiTracer rmiTracer;
                 try {
-                    rmiTracer = serializer.decode(pro.getDatas());
+                    rmiTracer = serializer.decode(reqPro.getDatas());
                 } catch (SerializationException e) {
                     logger.warn("ingore this request, because decode failed. remote={}", channel.getRemoteAddress(), e);
                     return null;
@@ -198,7 +198,7 @@ public class WorkerSupport implements Supporter, MessageSubscriber,
             @Override
             public void run() {
                 
-                final RmiRequest req = convertToReq(pro);
+                final RmiRequest req = convertToReq(reqPro);
                 if( null == req ) {
                     logger.warn("convertToReq failed. remote={};", channel.getRemoteAddress());
                     // 对于协议类型的出错，我们只能很遗憾的打印一个log，然后等待客户端超时
@@ -210,23 +210,23 @@ public class WorkerSupport implements Supporter, MessageSubscriber,
                 // 服务不存在
                 final ProviderService service = services.get(key);
                 if (null == service) {
-                    handleServiceNotFound(req, channel);
+                    handleServiceNotFound(reqPro, req, channel);
                     return;
                 }
 
                 // 如果超时了，则走处理请求超时
                 if (isReqTimeout(req.getTimestamp(), req.getTimeout(), service.getTimeout())) {
-                    handleTimeout(req, channel);
+                    handleTimeout(reqPro, req, channel);
                     return;
                 }
 
                 // 线程数量控制
                 if (!semaphore.tryAcquire()) {
-                    handleOverflow(req, channel);
+                    handleOverflow(reqPro, req, channel);
                     return;
                 }
                 
-                doWork(req, channel, service);
+                doWork(reqPro, req, channel, service);
 
             }
 
@@ -236,13 +236,15 @@ public class WorkerSupport implements Supporter, MessageSubscriber,
 
     /**
      * 反序列化并写入返回信息
+     * @param reqPro
      * @param resp
      * @param channel
      */
-    private void writeResponse(RmiResponse resp, Channel channel) {
+    private void writeResponse(Protocol reqPro, RmiResponse resp, Channel channel) {
         try {
             RmiTracer rmi = (RmiTracer) resp;
             Protocol pro = new Protocol();
+            pro.setId(reqPro.getId());
             pro.setType(TYPE_RMI);
             byte[] datas = serializer.encode(rmi);
             pro.setLength(datas.length);
@@ -257,13 +259,13 @@ public class WorkerSupport implements Supporter, MessageSubscriber,
     
     /**
      * 处理请求服务不存在
-     *
+     * @param reqPro
      * @param req
      * @param channel
      */
-    private void handleServiceNotFound(RmiRequest req, Channel channel) {
+    private void handleServiceNotFound(Protocol reqPro, RmiRequest req, Channel channel) {
         RmiResponse respEvt = new RmiResponse(req, RESULT_CODE_FAILED_SERVICE_NOT_FOUND);
-        writeResponse(respEvt, channel);
+        writeResponse(reqPro, respEvt, channel);
     }
 
     /**
@@ -281,48 +283,48 @@ public class WorkerSupport implements Supporter, MessageSubscriber,
     
     /**
      * 处理超时情况
-     *
+     * @param reqPro
      * @param req
      * @param channel
      */
-    private void handleTimeout(RmiRequest req, Channel channel) {
+    private void handleTimeout(Protocol reqPro, RmiRequest req, Channel channel) {
         RmiResponse respEvt = new RmiResponse(req, RESULT_CODE_FAILED_TIMEOUT);
-        writeResponse(respEvt, channel);
+        writeResponse(reqPro, respEvt, channel);
     }
 
     /**
      * 处理正常return返回的情况
-     *
+     * @param reqPro
      * @param returnObj
      * @param req
      * @param channel
      */
-    private final void handleNormal(Serializable returnObj, RmiRequest req, Channel channel) {
+    private final void handleNormal(Protocol reqPro, Serializable returnObj, RmiRequest req, Channel channel) {
         RmiResponse respEvt = new RmiResponse(req, RESULT_CODE_SUCCESSED_RETURN, returnObj);
-        writeResponse(respEvt, channel);
+        writeResponse(reqPro, respEvt, channel);
     }
 
     /**
      * 处理以抛异常返回的情况
-     *
+     * @param reqPro
      * @param returnObj
      * @param req
      * @param channel
      */
-    private void handleThrowable(Serializable returnObj, RmiRequest req, Channel channel) {
+    private void handleThrowable(Protocol reqPro, Serializable returnObj, RmiRequest req, Channel channel) {
         RmiResponse respEvt = new RmiResponse(req, RESULT_CODE_SUCCESSED_THROWABLE, returnObj);
-        writeResponse(respEvt, channel);
+        writeResponse(reqPro, respEvt, channel);
     }
 
     /**
      * 处理线程池满异常
-     *
+     * @param reqPro
      * @param req
      * @param channel
      */
-    private void handleOverflow(RmiRequest req, Channel channel) {
+    private void handleOverflow(Protocol reqPro, RmiRequest req, Channel channel) {
         RmiResponse respEvt = new RmiResponse(req, RESULT_CODE_FAILED_BIZ_THREAD_POOL_OVERFLOW);
-        writeResponse(respEvt, channel);
+        writeResponse(reqPro, respEvt, channel);
     }
 
 }

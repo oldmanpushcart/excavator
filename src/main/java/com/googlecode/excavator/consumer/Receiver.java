@@ -6,8 +6,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.jboss.netty.channel.Channel;
 
-import com.googlecode.excavator.protocol.RmiRequest;
-import com.googlecode.excavator.protocol.RmiResponse;
+import com.googlecode.excavator.protocol.Protocol;
 
 /**
  * 接收者
@@ -25,13 +24,14 @@ public interface Receiver {
      */
     public final static class Wrapper {
 
-        private final RmiRequest request;
-        private RmiResponse response;
+//        private final RmiRequest request;
+        private final Protocol request;
+        private Protocol response;
         private final ReentrantLock lock;
         private final Condition waitResp;
         private Channel channel;
 
-        public Wrapper(RmiRequest request) {
+        public Wrapper(Protocol request) {
             this.request = request;
             this.lock = new ReentrantLock(false);
             this.waitResp = lock.newCondition();
@@ -49,15 +49,15 @@ public interface Receiver {
             }
         }
 
-        public RmiRequest getRequest() {
+        public Protocol getRequest() {
             return request;
         }
 
-        public RmiResponse getResponse() {
+        public Protocol getResponse() {
             return response;
         }
 
-        public void setResponse(RmiResponse response) {
+        public void setResponse(Protocol response) {
             this.response = response;
         }
 
@@ -85,7 +85,7 @@ public interface Receiver {
      * @param req
      * @return
      */
-    Receiver.Wrapper register(RmiRequest req);
+    Receiver.Wrapper register(Protocol req);
 
     /**
      * 删除之前挂号的请求
