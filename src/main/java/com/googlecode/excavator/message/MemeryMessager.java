@@ -151,7 +151,7 @@ public class MemeryMessager implements Messager {
             try {
                 subscriber.receive(msg);
             } catch (Throwable t) {
-              logger.warn("post msg:{} to subscriber:%s failed.", new Object[]{msg, subscriber.getClass().getSimpleName(), t});
+              logger.warn("post msg:{} to subscriber:{} failed.", new Object[]{msg, subscriber.getClass().getSimpleName(), t});
                 // 投递失败，主动再次投递，以惩罚
                 post(msg);
             }

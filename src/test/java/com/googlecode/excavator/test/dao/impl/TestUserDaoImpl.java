@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.googlecode.excavator.Profiler;
 import com.googlecode.excavator.test.common.DaoException;
 import com.googlecode.excavator.test.dao.TestUserDao;
 import com.googlecode.excavator.test.domain.UserDO;
@@ -34,65 +35,90 @@ public class TestUserDaoImpl implements TestUserDao {
     
     @Override
     public Long indexUserIdByUsername(String username) throws DaoException {
-        return usernameIndex.get(username);
+        Profiler.enter();
+        try {
+            return usernameIndex.get(username);
+        }finally {
+            Profiler.release();
+        }
     }
 
     @Override
     public Long indexUserIdByRealname(String realname) throws DaoException {
-        return realnameIndex.get(realname);
+        Profiler.enter();
+        try {
+            return realnameIndex.get(realname);
+        }finally {
+            Profiler.release();
+        }
     }
 
     @Override
     public UserDO getByUserId(long userId) throws DaoException {
-        return users.get(userId);
+        Profiler.enter();
+        try {
+            return users.get(userId);
+        }finally {
+            Profiler.release();
+        }
     }
 
     @Override
     public List<UserDO> searchByUsername(String username) throws DaoException {
-        final Iterator<Entry<String, Long>> entryIt = usernameIndex.entrySet().iterator();
-        final List<UserDO> finds = new ArrayList<UserDO>();
-        while( entryIt.hasNext() ) {
-            final Entry<String, Long> entry = entryIt.next();
-            if( null == entry ) {
-                continue;
-            }
-            if( StringUtils.contains(entry.getKey(), username) ) {
-                final Long userId = entry.getValue();
-                if( null == userId ) {
+        Profiler.enter();
+        try {
+            final Iterator<Entry<String, Long>> entryIt = usernameIndex.entrySet().iterator();
+            final List<UserDO> finds = new ArrayList<UserDO>();
+            while( entryIt.hasNext() ) {
+                final Entry<String, Long> entry = entryIt.next();
+                if( null == entry ) {
                     continue;
                 }
-                final UserDO user = users.get(userId);
-                if( null == user ) {
-                    continue;
+                if( StringUtils.contains(entry.getKey(), username) ) {
+                    final Long userId = entry.getValue();
+                    if( null == userId ) {
+                        continue;
+                    }
+                    final UserDO user = users.get(userId);
+                    if( null == user ) {
+                        continue;
+                    }
+                    finds.add(user);
                 }
-                finds.add(user);
             }
+            return finds;
+        }finally {
+            Profiler.release();
         }
-        return finds;
     }
 
     @Override
     public List<UserDO> searchByRealname(String realname) throws DaoException {
-        final List<UserDO> finds = new ArrayList<UserDO>();
-        final Iterator<Entry<String, Long>> entryIt = realnameIndex.entrySet().iterator();
-        while( entryIt.hasNext() ) {
-            final Entry<String, Long> entry = entryIt.next();
-            if( null == entry ) {
-                continue;
-            }
-            if( StringUtils.contains(entry.getKey(), realname) ) {
-                final Long userId = entry.getValue();
-                if( null == userId ) {
+        Profiler.enter();
+        try {
+            final List<UserDO> finds = new ArrayList<UserDO>();
+            final Iterator<Entry<String, Long>> entryIt = realnameIndex.entrySet().iterator();
+            while( entryIt.hasNext() ) {
+                final Entry<String, Long> entry = entryIt.next();
+                if( null == entry ) {
                     continue;
                 }
-                final UserDO user = users.get(userId);
-                if( null == user ) {
-                    continue;
+                if( StringUtils.contains(entry.getKey(), realname) ) {
+                    final Long userId = entry.getValue();
+                    if( null == userId ) {
+                        continue;
+                    }
+                    final UserDO user = users.get(userId);
+                    if( null == user ) {
+                        continue;
+                    }
+                    finds.add(user);
                 }
-                finds.add(user);
             }
+            return finds;
+        }finally {
+            Profiler.release();
         }
-        return finds;
     }
 
 }

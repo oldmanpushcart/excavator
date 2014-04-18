@@ -173,7 +173,7 @@ public class TestUserServiceTestCase extends TestCaseNG {
                 @Override
                 public UserDO getByUserId(long userId) throws DaoException {
                     try {
-                        Thread.sleep(2000L);
+                        Thread.sleep(500L);
                     } catch (InterruptedException e) {
                         //...
                     }

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.googlecode.excavator.Profiler;
 import com.googlecode.excavator.test.common.DaoException;
 import com.googlecode.excavator.test.common.ErrorCodeConstants;
 import com.googlecode.excavator.test.common.TestException;
@@ -19,6 +20,7 @@ public class TestUserServiceImpl implements TestUserService {
     
     @Override
     public SingleResultDO<UserDO> login(String username, String password) throws TestException {
+        Profiler.enter();
         try {
             final SingleResultDO<UserDO> result = new SingleResultDO<UserDO>();
             final Long userId = testUserDao.indexUserIdByUsername(username);
@@ -43,12 +45,15 @@ public class TestUserServiceImpl implements TestUserService {
             return result;
         }catch(DaoException e) {
             throw new TestException("login error.", e);
+        }finally {
+            Profiler.release();
         }
         
     }
 
     @Override
     public SingleResultDO<UserDO> getById(long userId) throws TestException {
+        Profiler.enter();
         try {
             final SingleResultDO<UserDO> result = new SingleResultDO<UserDO>();
             final UserDO user = testUserDao.getByUserId(userId);
@@ -62,11 +67,14 @@ public class TestUserServiceImpl implements TestUserService {
             return result;
         }catch(DaoException e) {
             throw new TestException("getById error.", e);
+        }finally {
+            Profiler.release();
         }
     }
 
     @Override
     public SingleResultDO<UserDO> getByUsername(String username) throws TestException {
+        Profiler.enter();
         try {
             final SingleResultDO<UserDO> result = new SingleResultDO<UserDO>();
             final Long userId = testUserDao.indexUserIdByUsername(username);
@@ -86,11 +94,14 @@ public class TestUserServiceImpl implements TestUserService {
             return result;
         }catch(DaoException e) {
             throw new TestException("getByUsername error.", e);
+        }finally {
+            Profiler.release();
         }
     }
 
     @Override
     public SingleResultDO<Collection<UserDO>> searchByUsername(String username) throws TestException {
+        Profiler.enter();
         try{
             final SingleResultDO<Collection<UserDO>> result = new SingleResultDO<Collection<UserDO>>();
             final List<UserDO> finds = testUserDao.searchByUsername(username);
@@ -99,12 +110,15 @@ public class TestUserServiceImpl implements TestUserService {
             return result;
         }catch(DaoException e) {
             throw new TestException("getByUsername error.", e);
+        }finally {
+            Profiler.release();
         }
     }
 
     @Override
     public SingleResultDO<Collection<UserDO>> searchByRealname(String realname) throws TestException {
         final SingleResultDO<Collection<UserDO>> result = new SingleResultDO<Collection<UserDO>>();
+        Profiler.enter();
         try {
             final List<UserDO> finds = testUserDao.searchByRealname(realname);
             result.setSuccess(!finds.isEmpty());
@@ -112,6 +126,8 @@ public class TestUserServiceImpl implements TestUserService {
             return result;   
         }catch(DaoException e) {
             throw new TestException("getByUsername error.", e);
+        }finally {
+            Profiler.release();
         }
         
     }
