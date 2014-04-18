@@ -154,8 +154,8 @@ public class WorkerSupport implements Supporter, MessageSubscriber,
             doThrow(PROVIDER, runtime, t);
             handleThrowable(reqPro, t, req, channel);
         } finally {
-            semaphore.release();
             doFinally(PROVIDER, runtime);
+            semaphore.release();
         }//try
     }
 

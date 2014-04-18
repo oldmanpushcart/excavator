@@ -1,9 +1,11 @@
 package com.googlecode.excavator.test.testcase;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Resource;
@@ -13,6 +15,7 @@ import org.junit.Test;
 
 import com.googlecode.excavator.exception.InvokeTimeoutException;
 import com.googlecode.excavator.exception.ProviderNotFoundException;
+import com.googlecode.excavator.exception.ThreadPoolOverflowException;
 import com.googlecode.excavator.test.common.DaoException;
 import com.googlecode.excavator.test.common.ErrorCodeConstants;
 import com.googlecode.excavator.test.common.TestException;
@@ -187,6 +190,76 @@ public class TestUserServiceTestCase extends TestCaseNG {
     @Test(expected=ProviderNotFoundException.class)
     public void test_provider_notfound() throws Exception {
         testUserServiceNotFound.getById(10000);
+    }
+    
+    @Test
+    public void test_overflow_exception() throws Exception {
+//        final Object lock = new Object();
+        final ExecutorService executorService = Executors.newFixedThreadPool(300);
+        try {
+            testUserServiceTarget.setTestUserDao(new MockTestUserDao(){
+
+                @Override
+                public List<UserDO> searchByRealname(String realname) throws DaoException {
+//                    synchronized (lock) {
+                        try {
+                            Thread.sleep(2000L);
+                        } catch (InterruptedException e) {
+                            //
+                        }
+//                    }
+                    return testUserDao.searchByRealname(realname);
+                }
+                
+            });
+            int index = 0;
+            int total = 300;
+            
+            final AtomicBoolean isThreadPoolOverflowException = new AtomicBoolean(true);
+            final AtomicBoolean isIndexGt250WhenException = new AtomicBoolean(true);
+            final AtomicBoolean isIndexLt250WhenNormal = new AtomicBoolean(true);
+            final CountDownLatch countDown = new CountDownLatch(total);
+            
+                while(index++<total) {
+                    
+                    final int f = index;
+                    executorService.execute(new Runnable(){
+
+                        @Override
+                        public void run() {
+                            try {
+                                testUserService.searchByRealname("fuck");
+                                if( f > 250 ) {
+                                    isIndexLt250WhenNormal.set(false);
+                                }
+                            }catch(Throwable t) {
+                                if( ! (t instanceof ThreadPoolOverflowException) ) {
+                                    isThreadPoolOverflowException.set(false);
+                                }
+                                if( f < 250 ) {
+                                    isIndexGt250WhenException.set(false);
+                                }
+                            } finally {
+                                countDown.countDown();
+                            }
+                        }
+                        
+                    });
+                    
+                }
+                
+//                synchronized (lock) {
+//                    lock.notifyAll();
+//                }
+                
+                countDown.await(60, TimeUnit.SECONDS);
+                Assert.assertTrue(isThreadPoolOverflowException.get());
+                Assert.assertTrue(isIndexGt250WhenException.get());
+                Assert.assertTrue(isIndexLt250WhenNormal.get());
+                
+        } finally {
+            testUserServiceTarget.setTestUserDao(testUserDao);
+        }
     }
     
 }

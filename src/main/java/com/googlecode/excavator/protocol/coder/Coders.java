@@ -2,6 +2,7 @@ package com.googlecode.excavator.protocol.coder;
 
 import static com.googlecode.excavator.protocol.Protocol.TYPE_RMI;
 
+import com.googlecode.excavator.exception.ProtocolCoderException;
 import com.googlecode.excavator.protocol.Protocol;
 import com.googlecode.excavator.protocol.RmiRequest;
 import com.googlecode.excavator.protocol.RmiResponse;

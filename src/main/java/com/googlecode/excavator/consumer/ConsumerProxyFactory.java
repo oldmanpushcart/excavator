@@ -283,11 +283,10 @@ public class ConsumerProxyFactory {
      * @param leftTimeout
      * @return
      * @throws InvokeTimeoutException
-     * @throws ProviderNotFoundException
      * @throws InterruptedException
      */
     private Receiver.Wrapper waitForReceive(Receiver.Wrapper wrapper, RmiRequest req, long leftTimeout)
-            throws InvokeTimeoutException, ProviderNotFoundException, InterruptedException {
+            throws InvokeTimeoutException, InterruptedException {
 
         // µÈ´ýÏûÏ¢
         wrapper.getWaitResp().await(leftTimeout, TimeUnit.MILLISECONDS);
