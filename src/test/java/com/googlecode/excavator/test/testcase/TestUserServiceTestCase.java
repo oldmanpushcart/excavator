@@ -161,7 +161,7 @@ public class TestUserServiceTestCase extends TestCaseNG {
             });
         }//for
         
-        countDown.await(60, TimeUnit.SECONDS);
+        Assert.assertTrue(countDown.await(60, TimeUnit.SECONDS));
         Assert.assertEquals(successCounter.get(), totalCounter.get());
     }
     
@@ -252,7 +252,7 @@ public class TestUserServiceTestCase extends TestCaseNG {
 //                    lock.notifyAll();
 //                }
                 
-                countDown.await(60, TimeUnit.SECONDS);
+                Assert.assertTrue(countDown.await(60, TimeUnit.SECONDS));
                 Assert.assertTrue(isThreadPoolOverflowException.get());
                 Assert.assertTrue(isIndexGt250WhenException.get());
                 Assert.assertTrue(isIndexLt250WhenNormal.get());

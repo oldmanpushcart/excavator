@@ -47,7 +47,7 @@ public class MessagerTestCase {
             messager.post(new Message<String>(words));
         }
         
-        countDown.await(10, TimeUnit.SECONDS);
+        Assert.assertTrue(countDown.await(10, TimeUnit.SECONDS));
         Assert.assertTrue(total == counter.get());
         
         
@@ -65,7 +65,8 @@ public class MessagerTestCase {
             
             @Override
             public void receive(Message<?> msg) throws Exception {
-                if( msg.getReTry() <=2 ) {
+                if( null != msg
+                        && msg.getReTry() <=2 ) {
                     throw new Exception("retry...");
                 }
                 try {
@@ -88,7 +89,7 @@ public class MessagerTestCase {
             messager.post(new Message<String>(words));
         }
         
-        countDown.await(10, TimeUnit.SECONDS);
+        Assert.assertTrue(countDown.await(10, TimeUnit.SECONDS));
         Assert.assertTrue(total == counter.get());
         
     }

@@ -108,7 +108,7 @@ public class RingTestCase {
             });
         }
         
-        countDown.await(30, TimeUnit.SECONDS);
+        Assert.assertTrue(countDown.await(30, TimeUnit.SECONDS));
         Assert.assertTrue(ring.isEmpty());
         Assert.assertEquals(counter.get(), total);
         

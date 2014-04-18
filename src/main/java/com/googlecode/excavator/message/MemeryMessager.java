@@ -32,7 +32,7 @@ public class MemeryMessager implements Messager {
      * 每次重复投递的惩罚时间步长
      * 最终的惩罚时间为 RETRY * PUNISH_TIME_STEP
      */
-    private final long PUNISH_TIME_STEP = 500;
+    private final long PUNISH_TIME_STEP = 50;
 
     /*
      * 订阅关系网
