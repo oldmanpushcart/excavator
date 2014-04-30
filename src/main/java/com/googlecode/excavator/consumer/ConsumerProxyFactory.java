@@ -49,6 +49,7 @@ import com.googlecode.excavator.protocol.Protocol;
 import com.googlecode.excavator.protocol.RmiRequest;
 import com.googlecode.excavator.protocol.RmiResponse;
 import com.googlecode.excavator.protocol.coder.Coders;
+import com.googlecode.excavator.util.TokenUtil;
 
 /**
  * 消费者代理工厂
@@ -105,10 +106,9 @@ public class ConsumerProxyFactory {
                 final String sign = signature(method);
                 final long timeout = getFixTimeout(method, defaultTimeout, methodTimeoutMap);
                 final RmiRequest req = generateRmiRequest(group, version, args, sign, timeout);
-                final Protocol reqPro = Coders.toProtocol(req);
                 
+                final Protocol reqPro = Coders.toProtocol(req);
                 final Receiver.Wrapper receiverWrapper = registerRecevier(reqPro);
-
                 final ReentrantLock lock = receiverWrapper.getLock();
                 final long start = currentTimeMillis();
                 final ChannelRing.Wrapper channelWrapper;
@@ -190,17 +190,22 @@ public class ConsumerProxyFactory {
                 final Runtimes.Runtime runtime = Runtimes.getRuntime();
 
                 // 如果是第一次请求，需要主动生成token
+                final String token;
                 if (null == runtime) {
-                    req = new RmiRequest(
-                            group, version, sign,
-                            changeToSerializable(args), getAppName(), timeout);
+                    token = TokenUtil.genToken();
                 } // 如果不是第一次请求，则需要将原来的token带上
                 else {
-                    req = new RmiRequest(
-                            runtime.getReq().getToken(),
-                            group, version, sign,
-                            changeToSerializable(args), getAppName(), timeout);
+                    token = runtime.getReq().getToken();
                 }
+                req = new RmiRequest();
+                req.setToken(token);
+                req.setGroup(group);
+                req.setVersion(version);
+                req.setSign(sign);
+                req.setArgs(changeToSerializable(args));
+                req.setAppName(getAppName());
+                req.setTimeout(timeout);
+                req.setKey(group + version + sign);
                 return req;
             }
 

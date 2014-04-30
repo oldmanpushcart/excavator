@@ -37,38 +37,46 @@ public final class RmiResponse extends RmiTracer {
      */
     public static final short RESULT_CODE_FAILED_TIMEOUT = 6;
 
-    private final short code;			//返回结果码
-    private final Serializable object;	//返回结果
+    private short code;			//返回结果码
+    private Serializable object;	//返回结果
 
-    /**
-     * 构造rmi应答
-     *
-     * @param req 应答所对应的请求<br/>
-     * 此时构造出来的应答包将包含有与请求相同的id和token
-     * @param code
-     * @param object
-     */
-    public RmiResponse(RmiRequest req, short code, Serializable object) {
-        super(req.getToken());
-        this.code = code;
-        this.object = object;
-    }
-
-    /**
-     * 构造rmi应答<br/>
-     * 无返回值版本，用于构造出错场景的rmi应答,此时不需要有回复值
-     *
-     * @param req
-     * @param code
-     */
-    public RmiResponse(RmiRequest req, short code) {
-        super(req.getToken());
-        this.code = code;
-        this.object = null;
-    }
+//    /**
+//     * 构造rmi应答
+//     *
+//     * @param req 应答所对应的请求<br/>
+//     * 此时构造出来的应答包将包含有与请求相同的id和token
+//     * @param code
+//     * @param object
+//     */
+//    public RmiResponse(RmiRequest req, short code, Serializable object) {
+//        super(req.getToken());
+//        this.code = code;
+//        this.object = object;
+//    }
+//
+//    /**
+//     * 构造rmi应答<br/>
+//     * 无返回值版本，用于构造出错场景的rmi应答,此时不需要有回复值
+//     *
+//     * @param req
+//     * @param code
+//     */
+//    public RmiResponse(RmiRequest req, short code) {
+//        super(req.getToken());
+//        this.code = code;
+//        this.object = null;
+//    }
 
     public short getCode() {
         return code;
+    }
+
+    public void setCode(short code) {
+        this.code = code;
+    }
+
+    public void setObject(Serializable object) {
+        this.object = object;
     }
 
     public Serializable getObject() {

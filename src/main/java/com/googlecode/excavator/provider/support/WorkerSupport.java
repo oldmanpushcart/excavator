@@ -264,7 +264,10 @@ public class WorkerSupport implements Supporter, MessageSubscriber,
      * @param channel
      */
     private void handleServiceNotFound(Protocol reqPro, RmiRequest req, Channel channel) {
-        RmiResponse respEvt = new RmiResponse(req, RESULT_CODE_FAILED_SERVICE_NOT_FOUND);
+//        RmiResponse respEvt = new RmiResponse(req, RESULT_CODE_FAILED_SERVICE_NOT_FOUND);
+        RmiResponse respEvt = new RmiResponse();
+        respEvt.setToken(req.getToken());
+        respEvt.setCode(RESULT_CODE_FAILED_SERVICE_NOT_FOUND);
         writeResponse(reqPro, respEvt, channel);
     }
 
@@ -288,7 +291,10 @@ public class WorkerSupport implements Supporter, MessageSubscriber,
      * @param channel
      */
     private void handleTimeout(Protocol reqPro, RmiRequest req, Channel channel) {
-        RmiResponse respEvt = new RmiResponse(req, RESULT_CODE_FAILED_TIMEOUT);
+//        RmiResponse respEvt = new RmiResponse(req, RESULT_CODE_FAILED_TIMEOUT);
+        RmiResponse respEvt = new RmiResponse();
+        respEvt.setToken(req.getToken());
+        respEvt.setCode(RESULT_CODE_FAILED_TIMEOUT);
         writeResponse(reqPro, respEvt, channel);
     }
 
@@ -300,7 +306,11 @@ public class WorkerSupport implements Supporter, MessageSubscriber,
      * @param channel
      */
     private final void handleNormal(Protocol reqPro, Serializable returnObj, RmiRequest req, Channel channel) {
-        RmiResponse respEvt = new RmiResponse(req, RESULT_CODE_SUCCESSED_RETURN, returnObj);
+//        RmiResponse respEvt = new RmiResponse(req, RESULT_CODE_SUCCESSED_RETURN, returnObj);
+        RmiResponse respEvt = new RmiResponse();
+        respEvt.setToken(req.getToken());
+        respEvt.setCode(RESULT_CODE_SUCCESSED_RETURN);
+        respEvt.setObject(returnObj);
         writeResponse(reqPro, respEvt, channel);
     }
 
@@ -312,7 +322,11 @@ public class WorkerSupport implements Supporter, MessageSubscriber,
      * @param channel
      */
     private void handleThrowable(Protocol reqPro, Serializable returnObj, RmiRequest req, Channel channel) {
-        RmiResponse respEvt = new RmiResponse(req, RESULT_CODE_SUCCESSED_THROWABLE, returnObj);
+//        RmiResponse respEvt = new RmiResponse(req, RESULT_CODE_SUCCESSED_THROWABLE, returnObj);
+        RmiResponse respEvt = new RmiResponse();
+        respEvt.setToken(req.getToken());
+        respEvt.setCode(RESULT_CODE_SUCCESSED_THROWABLE);
+        respEvt.setObject(returnObj);
         writeResponse(reqPro, respEvt, channel);
     }
 
@@ -323,7 +337,10 @@ public class WorkerSupport implements Supporter, MessageSubscriber,
      * @param channel
      */
     private void handleOverflow(Protocol reqPro, RmiRequest req, Channel channel) {
-        RmiResponse respEvt = new RmiResponse(req, RESULT_CODE_FAILED_BIZ_THREAD_POOL_OVERFLOW);
+//        RmiResponse respEvt = new RmiResponse(req, RESULT_CODE_FAILED_BIZ_THREAD_POOL_OVERFLOW);
+        RmiResponse respEvt = new RmiResponse();
+        respEvt.setToken(req.getToken());
+        respEvt.setCode(RESULT_CODE_FAILED_BIZ_THREAD_POOL_OVERFLOW);
         writeResponse(reqPro, respEvt, channel);
     }
 

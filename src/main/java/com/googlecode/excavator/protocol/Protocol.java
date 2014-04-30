@@ -1,6 +1,5 @@
 package com.googlecode.excavator.protocol;
 
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 网络通讯协议
@@ -25,13 +24,9 @@ public final class Protocol {
      */
     public static byte TYPE_HEARTBEAT = 0x02;
     
-    /**
-     * rmi的递增序列
-     */
-    private static transient final AtomicLong seq = new AtomicLong();
-
+    
     public Protocol() {
-        this.id = seq.incrementAndGet();
+        //
     }
     
     private long id;

@@ -1,12 +1,8 @@
 package com.googlecode.excavator.protocol;
 
-import static com.googlecode.excavator.PropertyConfiger.isEnableToken;
 import static java.lang.System.currentTimeMillis;
 
 import java.io.Serializable;
-import java.util.UUID;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * rmi调用跟踪类<br/>
@@ -25,8 +21,8 @@ public class RmiTracer implements Serializable {
 //    private static transient final AtomicLong seq = new AtomicLong();
 
 //    private final long id;
-    private final String token;
-    private long timestamp;
+    private String token;
+    private long timestamp = currentTimeMillis();
 
 //    /**
 //     * 携带id和token的构造函数<br/>
@@ -41,34 +37,20 @@ public class RmiTracer implements Serializable {
 //        this.timestamp = currentTimeMillis();
 //    }
 
-    /**
-     * 携带token的构造函数<br/>
-     * 用于rmi请求转发的场景
-     *
-     * @param token
-     */
-    public RmiTracer(String token) {
-//        this.id = seq.incrementAndGet();
-        this.token = token;
-        this.timestamp = currentTimeMillis();
-    }
-
-    /**
-     * 不携带id与token的构造函数<br/>
-     * id将会自增,token将会随机生成<br/>
-     * 用于最初发起rmi请求的场景
-     */
-    public RmiTracer() {
-//        this.id = seq.incrementAndGet();
-        this.token = isEnableToken()
-                ? StringUtils.EMPTY
-                : UUID.randomUUID().toString();
-        this.timestamp = currentTimeMillis();
-    }
-
-//    public long getId() {
-//        return id;
+//    /**
+//     * 不携带id与token的构造函数<br/>
+//     * id将会自增,token将会随机生成<br/>
+//     * 用于最初发起rmi请求的场景
+//     */
+//    public RmiTracer() {
+//        this.token = isEnableToken()
+//                ? StringUtils.EMPTY
+//                : UUID.randomUUID().toString();
 //    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 
     public String getToken() {
         return token;
